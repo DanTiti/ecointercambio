@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Coincidencias</title>
+  <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+  <div class="navbar">
+    <h1>EcoIntercambio</h1>
+    <div class="nav-links">
+      <button onclick="location.href='inicio.html'">Inicio</button>
+      <button onclick="location.href='dashboard.html'">Publicar</button>
+      <button onclick="location.href='coincidencias.html'">Coincidencias</button>
+      <button onclick="location.href='mis-publicaciones.html'">Mis publicaciones</button>
+      <button onclick="location.href='chat.html'">Bandeja <span id="notif"></span></button>
+      <button onclick="localStorage.clear(); location.href='login.html'">Salir</button>
+    </div>
+  </div>
+
+  <div class="container">
+    <h2>Coincidencias de tus publicaciones</h2>
+    <div id="matches"></div>
+  </div>
+
+  <script>
+    const userId = localStorage.getItem('userId');
+    if (!userId) location.href = 'login.html';
+    if (userId) {
+      fetch(`http://localhost:3000/api/mensajes/no-leidos/${userId}`)
+        .then(res => res.json())
+        .then(data => {
+          const total = data.reduce((sum, x) => sum + x.cantidad, 0);
+          const notif = document.getElementById('notif');
+          if (notif) notif.innerText = total > 0 ? `(${total})` : '';
+        });
+    }
+
+    async function cargarMatches() {
+      const res = await fetch(`http://localhost:3000/api/match/${userId}`);
+      const matches = await res.json();
+
+    document.getElementById('matches').innerHTML = matches.map(m => `
+      <div class="producto"onclick="abrirMensaje(${m.usuario}, '${encodeURIComponent(m.nombreUsuario)}')">
+        <img src="http://localhost:3000/uploads/${m.imagen}" alt="">
+        <strong>Match ${m.tipo.toUpperCase()}</strong><br>
+        Tú buscas: <b>${m.buscaYo}</b> | ofreces: <b>${m.ofrezcoYo}</b><br>
+        Usuario <b>${m.nombreUsuario}</b> busca: <b>${m.buscaEl}</b> | ofrece: <b>${m.ofreceEl}</b><br>
+      </div>
+    `).join('');
+          `<p>No se encontraron coincidencias aún.</p>`;
+    }
+
+    function abrirMensaje(usuarioId, nombreUsuario) {
+      const decoded = decodeURIComponent(nombreUsuario);
+      localStorage.setItem('contactoId', usuarioId);
+      localStorage.setItem('contactoNombre', decoded);
+      location.href = 'enviar-mensaje.html';
+    }
+    cargarMatches();
+  </script>
+</body>
+</html>

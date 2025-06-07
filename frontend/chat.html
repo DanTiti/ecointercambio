@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Mensajes recibidos</title>
+  <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+  <div class="navbar">
+    <h1>EcoIntercambio</h1>
+    <div class="nav-links">
+      <button onclick="location.href='inicio.html'">Inicio</button>
+      <button onclick="location.href='dashboard.html'">Publicar</button>
+      <button onclick="location.href='coincidencias.html'">Coincidencias</button>
+      <button onclick="location.href='mis-publicaciones.html'">Mis publicaciones</button>
+      <button onclick="location.href='chat.html'">Bandeja <span id="notif"></span></button>
+      <button onclick="localStorage.clear(); location.href='login.html'">Salir</button>
+    </div>
+  </div>
+
+  <div class="container">
+    <h2>Mensajes recibidos</h2>
+    <div id="recibidos"></div>
+  </div>
+
+  <script>
+    const userId = localStorage.getItem('userId');
+    if (!userId) location.href = 'login.html';
+
+    fetch(`http://localhost:3000/api/mensajes/recibidos/${userId}`)
+    .then(res => res.json())
+    .then(data => {
+        console.log('Mensajes recibidos:', data);
+        document.getElementById('recibidos').innerHTML = data.length > 0
+        ? data.map(m => `
+            <div class="producto">
+                <p><b>De:</b> ${m.remitente}</p>
+                <p>${m.mensaje}</p>
+                <small>${new Date(m.creado_en).toLocaleString()}</small>
+            </div>
+            `).join('')
+        : `<p>No tienes mensajes por ahora.</p>`;
+    });
+  </script>
+</body>
+</html>

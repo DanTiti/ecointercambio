@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Mis Publicaciones</title>
+  <link rel="stylesheet" href="css/styles.css" />
+</head>
+<body>
+  <div class="navbar">
+    <h1>EcoIntercambio</h1>
+    <div class="nav-links">
+      <button onclick="location.href='inicio.html'">Inicio</button>
+      <button onclick="location.href='dashboard.html'">Publicar</button>
+      <button onclick="location.href='coincidencias.html'">Coincidencias</button>
+      <button onclick="location.href='mis-publicaciones.html'">Mis publicaciones</button>
+      <button onclick="location.href='chat.html'">Bandeja <span id="notif"></span></button>
+      <button onclick="localStorage.clear(); location.href='login.html'">Salir</button>
+    </div>
+  </div>
+
+  <div class="container">
+    <h2>Mis publicaciones</h2>
+    <div id="mias"></div>
+  </div>
+
+  <script>
+    const userId = localStorage.getItem('userId');
+    if (!userId) location.href = 'login.html';
+
+    fetch(`http://localhost:3000/api/productos/mios/${userId}`)
+      .then(res => res.json())
+      .then(mios => {
+        document.getElementById('mias').innerHTML = mios.map(p => `
+          <div class="producto">
+            <img src="http://localhost:3000/uploads/${p.imagen}" alt="">
+            <strong>${p.nombre}</strong><br>
+            Busca: ${p.busca} | Ofrece: ${p.ofrece}
+          </div>
+        `).join('');
+      });
+
+    fetch(`http://localhost:3000/api/mensajes/no-leidos/${userId}`)
+      .then(res => res.json())
+      .then(data => {
+        const total = data.reduce((sum, x) => sum + x.cantidad, 0);
+        const notif = document.getElementById('notif');
+        if (notif) notif.innerText = total > 0 ? `(${total})` : '';
+      });
+  </script>
+</body>
+</html>

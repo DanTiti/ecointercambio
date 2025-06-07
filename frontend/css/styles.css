@@ -1,0 +1,114 @@
+/* Reset básico */
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+/* Fondo general */
+body {
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  background: #f4f7fc;
+  color: #333;
+  min-height: 100vh;
+}
+
+/* Contenedor más amplio */
+.container {
+  max-width: 1200px;
+  margin: auto;
+  padding: 40px 20px;
+}
+
+/* Títulos */
+h2, h3 {
+  color: #1e88e5;
+  margin-bottom: 15px;
+}
+
+/* Botones */
+button {
+  padding: 10px 20px;
+  background-color: #1e88e5;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  margin-left: 8px;
+}
+
+button:hover {
+  background-color: #1565c0;
+}
+
+/* Formularios */
+form input, form button {
+  width: 100%;
+  padding: 12px;
+  margin: 8px 0;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  font-size: 14px;
+}
+
+/* Grid de productos */
+#otros, #mios, #matches, #publicaciones {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 20px;
+  margin-top: 20px;
+}
+
+/* Tarjeta de producto */
+.producto {
+  background: #fff;
+  border-radius: 8px;
+  box-shadow: 0 0 8px rgba(0, 0, 0, 0.05);
+  padding: 12px;
+  text-align: center;
+  transition: transform 0.2s ease;
+}
+
+.producto:hover {
+  transform: translateY(-3px);
+}
+
+.producto img {
+  width: 100%;
+  height: 160px;
+  object-fit: cover;
+  border-radius: 6px;
+  margin-bottom: 10px;
+}
+
+.link {
+  text-align: center;
+  margin-top: 10px;
+}
+
+.link a {
+  text-decoration: none;
+  color: #1e88e5;
+}
+
+/* Barra de navegación */
+.navbar {
+  width: 100%;
+  background: #1e88e5;
+  padding: 15px 20px;
+  color: white;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.navbar h1 {
+  font-size: 20px;
+}
+
+.navbar .nav-links button {
+  background: white;
+  color: #1e88e5;
+  margin-left: 10px;
+  font-weight: bold;
+}

@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Enviar mensaje</title>
+  <link rel="stylesheet" href="css/styles.css" />
+</head>
+<body>
+  <div class="navbar">
+    <h1>EcoIntercambio</h1>
+    <div class="nav-links">
+      <button onclick="location.href='inicio.html'">Inicio</button>
+      <button onclick="location.href='dashboard.html'">Publicar</button>
+      <button onclick="location.href='coincidencias.html'">Coincidencias</button>
+      <button onclick="location.href='mis-publicaciones.html'">Mis publicaciones</button>
+      <button onclick="location.href='chat.html'">Bandeja</button>
+      <button onclick="localStorage.clear(); location.href='login.html'">Salir</button>
+    </div>
+  </div>
+
+  <div class="container">
+    <h2>Escribe a <span id="nombreDestinatario"></span></h2>
+    <form id="formMensaje">
+      <textarea id="mensaje" placeholder="Escribe tu mensaje..." required style="width:100%; height:100px;"></textarea>
+      <button type="submit">Enviar</button>
+    </form>
+    <div id="estado"></div>
+  </div>
+
+  <script>
+    const userId = localStorage.getItem('userId');
+    const contactoId = localStorage.getItem('contactoId');
+    const contactoNombre = localStorage.getItem('contactoNombre');
+    if (!userId || !contactoId) location.href = 'inicio.html';
+
+    document.getElementById('nombreDestinatario').innerText = contactoNombre;
+
+    document.getElementById('formMensaje').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const mensaje = document.getElementById('mensaje').value;
+
+      const res = await fetch('http://localhost:3000/api/mensajes/enviar', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          de_usuario: userId,
+          para_usuario: contactoId,
+          mensaje: mensaje
+        })
+      });
+
+      const data = await res.json();
+      document.getElementById('estado').innerText = data.message || 'Mensaje enviado';
+      document.getElementById('formMensaje').reset();
+    });
+  </script>
+</body>
+</html>
