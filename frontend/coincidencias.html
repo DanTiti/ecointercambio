@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8">
-  <title>Coincidencias</title>
+  <title>Coincidencias - EcoIntercambio</title>
   <link rel="stylesheet" href="css/styles.css">
 </head>
 <body>
@@ -19,37 +19,13 @@
   </div>
 
   <div class="container">
-    <h2>Coincidencias de tus publicaciones</h2>
+    <h2>Tus coincidencias</h2>
     <div id="matches"></div>
   </div>
 
   <script>
     const userId = localStorage.getItem('userId');
-    if (!userId) location.href = 'login.html';
-    if (userId) {
-      fetch(`http://localhost:3000/api/mensajes/no-leidos/${userId}`)
-        .then(res => res.json())
-        .then(data => {
-          const total = data.reduce((sum, x) => sum + x.cantidad, 0);
-          const notif = document.getElementById('notif');
-          if (notif) notif.innerText = total > 0 ? `(${total})` : '';
-        });
-    }
-
-    async function cargarMatches() {
-      const res = await fetch(`http://localhost:3000/api/match/${userId}`);
-      const matches = await res.json();
-
-    document.getElementById('matches').innerHTML = matches.map(m => `
-      <div class="producto"onclick="abrirMensaje(${m.usuario}, '${encodeURIComponent(m.nombreUsuario)}')">
-        <img src="http://localhost:3000/uploads/${m.imagen}" alt="">
-        <strong>Match ${m.tipo.toUpperCase()}</strong><br>
-        Tú buscas: <b>${m.buscaYo}</b> | ofreces: <b>${m.ofrezcoYo}</b><br>
-        Usuario <b>${m.nombreUsuario}</b> busca: <b>${m.buscaEl}</b> | ofrece: <b>${m.ofreceEl}</b><br>
-      </div>
-    `).join('');
-          `<p>No se encontraron coincidencias aún.</p>`;
-    }
+    if (!userId || userId === '0') location.href = 'login.html';
 
     function abrirMensaje(usuarioId, nombreUsuario) {
       const decoded = decodeURIComponent(nombreUsuario);
@@ -57,6 +33,31 @@
       localStorage.setItem('contactoNombre', decoded);
       location.href = 'enviar-mensaje.html';
     }
+
+    async function cargarMatches() {
+      const res = await fetch(`http://localhost:3000/api/match/${userId}`);
+      const matches = await res.json();
+
+      document.getElementById('matches').innerHTML = matches.map(m => `
+        <div class="producto" onclick="abrirMensaje(${m.usuario}, '${encodeURIComponent(m.nombreUsuario)}')">
+          <img src="http://localhost:3000/uploads/${m.imagen}" alt="">
+          <strong>Match ${m.tipo.toUpperCase()}</strong><br>
+          Tú buscas: <b>${m.buscaYo}</b> | ofreces: <b>${m.ofrezcoYo}</b><br>
+          Usuario: <b>${m.nombreUsuario}</b> busca: <b>${m.buscaEl}</b> | ofrece: <b>${m.ofreceEl}</b><br>
+        </div>
+      `).join('');
+    }
+
+    fetch(`http://localhost:3000/api/mensajes/no-leidos/${userId}`)
+      .then(res => res.json())
+      .then(data => {
+        if (Array.isArray(data)) {
+          const total = data.reduce((sum, x) => sum + x.cantidad, 0);
+          const notif = document.getElementById('notif');
+          if (notif) notif.innerText = total > 0 ? `(${total})` : '';
+        }
+      });
+
     cargarMatches();
   </script>
 </body>

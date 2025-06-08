@@ -2,8 +2,7 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Mensajes recibidos</title>
+  <title>Bandeja de entrada - EcoIntercambio</title>
   <link rel="stylesheet" href="css/styles.css">
 </head>
 <body>
@@ -26,22 +25,28 @@
 
   <script>
     const userId = localStorage.getItem('userId');
-    if (!userId) location.href = 'login.html';
+    if (!userId || userId === '0') location.href = 'login.html';
 
     fetch(`http://localhost:3000/api/mensajes/recibidos/${userId}`)
-    .then(res => res.json())
-    .then(data => {
-        console.log('Mensajes recibidos:', data);
-        document.getElementById('recibidos').innerHTML = data.length > 0
-        ? data.map(m => `
-            <div class="producto">
-                <p><b>De:</b> ${m.remitente}</p>
-                <p>${m.mensaje}</p>
-                <small>${new Date(m.creado_en).toLocaleString()}</small>
-            </div>
-            `).join('')
-        : `<p>No tienes mensajes por ahora.</p>`;
-    });
+      .then(res => res.json())
+      .then(data => {
+        if (!Array.isArray(data)) {
+          document.getElementById('recibidos').innerText = 'No se pudieron cargar los mensajes.';
+          return;
+        }
+        if (data.length === 0) {
+          document.getElementById('recibidos').innerHTML = '<p>No tienes mensajes aún.</p>';
+          return;
+        }
+
+        document.getElementById('recibidos').innerHTML = data.map(m => `
+          <div class="producto">
+            <b>De:</b> ${m.remitente}<br>
+            <b>Mensaje:</b> ${m.mensaje}<br>
+            <small>${new Date(m.creado_en).toLocaleString()}</small>
+          </div>
+        `).join('');
+      });
   </script>
 </body>
 </html>

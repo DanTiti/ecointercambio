@@ -22,31 +22,19 @@
   <div class="container">
     <h2>Publica un nuevo útil</h2>
     <form id="formProducto" enctype="multipart/form-data">
-      <input name="nombre" placeholder="Teclea tu nombre: " required>
       <input name="busca" placeholder="Buscas (ej: tijeras)" required>
       <input name="ofrece" placeholder="Ofreces (ej: regla)" required>
       <input type="file" name="imagen" accept="image/*">
       <button type="submit">Publicar</button>
     </form>
-
     <div id="coincidenciasRapidas" style="margin-top:20px;"></div>
   </div>
 
   <script>
     const userId = localStorage.getItem('userId');
-    if (!userId) location.href = 'login.html';
+    if (!userId || userId === '0') location.href = 'login.html';
 
-    if (userId) {
-      fetch(`http://localhost:3000/api/mensajes/no-leidos/${userId}`)
-        .then(res => res.json())
-        .then(data => {
-          const total = data.reduce((sum, x) => sum + x.cantidad, 0);
-          const notif = document.getElementById('notif');
-          if (notif) notif.innerText = total > 0 ? `(${total})` : '';
-        });
-    }
-
-    document.getElementById('formProducto').addEventListener('submit', async (e) => {
+    async function publicarProducto(e) {
       e.preventDefault();
       const formData = new FormData(e.target);
       formData.append('usuario_id', userId);
@@ -59,26 +47,29 @@
       const data = await res.json();
       alert(data.message);
       e.target.reset();
+      cargarCoincidencias();
+    }
 
-      const resCoin = await fetch(`http://localhost:3000/api/match/${userId}`);
-      const coincidencias = await resCoin.json();
-      console.log('Coincidencias recibidas:', coincidencias);
+    async function cargarCoincidencias() {
+      const res = await fetch(`http://localhost:3000/api/match/${userId}`);
+      const coincidencias = await res.json();
 
       if (coincidencias.length > 0) {
         document.getElementById('coincidenciasRapidas').innerHTML = `
           <strong>¡Coincidencias encontradas!</strong><br>
-          ${coincidencias.slice(0, 3).map(c => `
-            <div class="producto" onclick="abrirMensaje(${p.usuario_id}, '${encodeURIComponent(p.nickname)}')">
-              Usuario <b>${c.nombreUsuario}</b> busca: <b>${c.buscaEl}</b> | ofrece: <b>${c.ofreceEl}</b><br>
-              Producto: <b>${c.nombreProductoEl}</b><br>
-              <img src="http://localhost:3000/uploads/${c.imagen}" alt=""><br>
+          ${coincidencias.map(c => `
+            <div class="producto" onclick="abrirMensaje(${c.usuario}, '${encodeURIComponent(c.nombreUsuario)}')">
+              <img src="http://localhost:3000/uploads/${c.imagen}" alt="">
+              Tú buscas: ${c.buscaYo} | ofreces: ${c.ofrezcoYo}<br>
+              Usuario: <b>${c.nombreUsuario}</b> busca: ${c.buscaEl} | ofrece: ${c.ofreceEl}<br>
+              Producto: ${c.nombreProductoEl}
             </div>
           `).join('')}
         `;
       } else {
         document.getElementById('coincidenciasRapidas').innerHTML = `<p>No se encontraron coincidencias por ahora.</p>`;
       }
-    });
+    }
 
     function abrirMensaje(usuarioId, nombreUsuario) {
       const decoded = decodeURIComponent(nombreUsuario);
@@ -86,6 +77,8 @@
       localStorage.setItem('contactoNombre', decoded);
       location.href = 'enviar-mensaje.html';
     }
+
+    document.getElementById('formProducto').addEventListener('submit', publicarProducto);
   </script>
 </body>
 </html>

@@ -60,7 +60,7 @@ router.get('/recibidos/:id', (req, res) => {
   `;
   db.query(sql, [req.params.id], (err, result) => {
     if (err) return res.status(500).json({ error: "Error al obtener mensajes" });
-    res.status(200).json(result);
+    res.json(result);
   });
 });
 

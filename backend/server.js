@@ -6,7 +6,6 @@ const productosRoutes = require('./routes/productos');
 const matchRoutes = require('./routes/match');
 const mensajesRoutes = require('./routes/mensajes');
 
-
 const app = express();
 
 app.use(cors());

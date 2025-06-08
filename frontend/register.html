@@ -8,43 +8,41 @@
 <body>
     <div class="navbar">
         <h1>EcoIntercambio</h1>
-        <div class="nav-links">
-            <button onclick="location.href='inicio.html'">Inicio</button>
-            <button onclick="location.href='dashboard.html'">Publicar</button>
-            <button onclick="location.href='coincidencias.html'">Coincidencias</button>
-            <button onclick="localStorage.clear(); location.href='login.html'">Salir</button>
-        </div>
     </div>
 
   <div class="container">
     <h2>Registro</h2>
     <form id="registerForm">
       <input type="text" name="nickname" placeholder="Nombre de usuario" required>
+      <input type="email" name="email" placeholder="Correo electrónico" required>
       <input type="password" name="password" placeholder="Contraseña" required>
       <button type="submit">Registrar</button>
     </form>
+
     <div class="link">
       ¿Ya tienes cuenta? <a href="login.html">Iniciar sesión</a>
     </div>
   </div>
 
-  <script>
-    document.getElementById('registerForm').addEventListener('submit', async (e) => {
-      e.preventDefault();
-      const form = e.target;
-      const nickname = form.nickname.value;
-      const password = form.password.value;
+<script>
+  document.getElementById('registerForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const form = e.target;
+    const nickname = form.nickname.value;
+    const email = form.email.value;
+    const password = form.password.value;
 
-      const res = await fetch('http://localhost:3000/api/auth/register', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ nickname, password })
-      });
-
-      const data = await res.json();
-      alert(data.message);
-      if (res.ok) window.location.href = "login.html";
+    const res = await fetch('http://localhost:3000/api/auth/register', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ nickname, email, password })
     });
-  </script>
+
+    const data = await res.json();
+    alert(data.message);
+    if (res.ok) window.location.href = "login.html";
+  });
+</script>
+
 </body>
 </html>

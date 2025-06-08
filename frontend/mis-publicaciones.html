@@ -1,10 +1,9 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Mis Publicaciones</title>
-  <link rel="stylesheet" href="css/styles.css" />
+  <meta charset="UTF-8">
+  <title>Mis Publicaciones - EcoIntercambio</title>
+  <link rel="stylesheet" href="css/styles.css">
 </head>
 <body>
   <div class="navbar">
@@ -21,31 +20,30 @@
 
   <div class="container">
     <h2>Mis publicaciones</h2>
-    <div id="mias"></div>
+    <div id="misPublicaciones"></div>
   </div>
 
   <script>
     const userId = localStorage.getItem('userId');
-    if (!userId) location.href = 'login.html';
+    if (!userId || userId === '0') location.href = 'login.html';
 
     fetch(`http://localhost:3000/api/productos/mios/${userId}`)
       .then(res => res.json())
-      .then(mios => {
-        document.getElementById('mias').innerHTML = mios.map(p => `
+      .then(productos => {
+        if (!Array.isArray(productos)) {
+          document.getElementById('misPublicaciones').innerHTML = '<p>Error al cargar publicaciones.</p>';
+          console.error('Respuesta inesperada:', productos);
+          return;
+        }
+
+        document.getElementById('misPublicaciones').innerHTML = productos.map(p => `
           <div class="producto">
             <img src="http://localhost:3000/uploads/${p.imagen}" alt="">
-            <strong>${p.nombre}</strong><br>
-            Busca: ${p.busca} | Ofrece: ${p.ofrece}
+            <b>Publicado por:</b> ${p.nombreUsuario}<br>
+            Ofrece: ${p.ofrece}<br>
+            Busca: ${p.busca}
           </div>
         `).join('');
-      });
-
-    fetch(`http://localhost:3000/api/mensajes/no-leidos/${userId}`)
-      .then(res => res.json())
-      .then(data => {
-        const total = data.reduce((sum, x) => sum + x.cantidad, 0);
-        const notif = document.getElementById('notif');
-        if (notif) notif.innerText = total > 0 ? `(${total})` : '';
       });
   </script>
 </body>

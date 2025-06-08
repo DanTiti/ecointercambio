@@ -20,7 +20,7 @@
   </div>
 
   <div class="container">
-    <h2>Escribe a <span id="nombreDestinatario"></span></h2>
+    <h2>Escribe a <span id="nombreDestinatario">usuario desconocido</span></h2>
     <form id="formMensaje">
       <textarea id="mensaje" placeholder="Escribe tu mensaje..." required style="width:100%; height:100px;"></textarea>
       <button type="submit">Enviar</button>
@@ -32,27 +32,37 @@
     const userId = localStorage.getItem('userId');
     const contactoId = localStorage.getItem('contactoId');
     const contactoNombre = localStorage.getItem('contactoNombre');
-    if (!userId || !contactoId) location.href = 'inicio.html';
 
-    document.getElementById('nombreDestinatario').innerText = contactoNombre;
+    if (!userId || !contactoId) {
+      alert('Faltan datos del contacto. Redirigiendo...');
+      location.href = 'inicio.html';
+    }
+
+    document.getElementById('nombreDestinatario').innerText = contactoNombre || 'usuario desconocido';
 
     document.getElementById('formMensaje').addEventListener('submit', async (e) => {
       e.preventDefault();
-      const mensaje = document.getElementById('mensaje').value;
+      const mensaje = document.getElementById('mensaje').value.trim();
+      if (!mensaje) return;
 
-      const res = await fetch('http://localhost:3000/api/mensajes/enviar', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          de_usuario: userId,
-          para_usuario: contactoId,
-          mensaje: mensaje
-        })
-      });
+      try {
+        const res = await fetch('http://localhost:3000/api/mensajes/enviar', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            de_usuario: userId,
+            para_usuario: contactoId,
+            mensaje: mensaje
+          })
+        });
 
-      const data = await res.json();
-      document.getElementById('estado').innerText = data.message || 'Mensaje enviado';
-      document.getElementById('formMensaje').reset();
+        const data = await res.json();
+        document.getElementById('estado').innerText = data.message || 'Mensaje enviado correctamente.';
+        document.getElementById('formMensaje').reset();
+      } catch (err) {
+        console.error('Error al enviar el mensaje:', err);
+        document.getElementById('estado').innerText = 'Error al enviar el mensaje. Inténtalo más tarde.';
+      }
     });
   </script>
 </body>

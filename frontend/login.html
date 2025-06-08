@@ -6,18 +6,18 @@
   <link rel="stylesheet" href="css/styles.css">
 </head>
 <body>
-    <div class="navbar">
-        <h1>EcoIntercambio</h1>
-        <div class="nav-links">
-        </div>
-    </div>
+  <div class="navbar">
+    <h1>EcoIntercambio</h1>
+  </div>
+
   <div class="container">
     <h2>Iniciar Sesión</h2>
     <form id="loginForm">
-      <input type="text" name="nickname" placeholder="Nombre de usuario" required>
+      <input type="email" name="email" placeholder="Correo electrónico" required>
       <input type="password" name="password" placeholder="Contraseña" required>
-      <button type="submit">Entrar</button>
+      <button type="submit">Iniciar sesión</button>
     </form>
+
     <div class="link">
       ¿No tienes cuenta? <a href="register.html">Regístrate aquí</a>
     </div>
@@ -27,23 +27,25 @@
     document.getElementById('loginForm').addEventListener('submit', async (e) => {
       e.preventDefault();
       const form = e.target;
-      const nickname = form.nickname.value;
+      const email = form.email.value;
       const password = form.password.value;
 
       const res = await fetch('http://localhost:3000/api/auth/login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ nickname, password })
+        body: JSON.stringify({ email, password })
       });
 
       const data = await res.json();
+      console.log(data); // <-- Esto para ver qué recibes realmente
       if (res.ok) {
-        localStorage.setItem('userId', data.userId);
-        alert("Sesión iniciada");
+        localStorage.setItem("userId", data.userId);
+        localStorage.setItem("nickname", data.nickname);
         window.location.href = "inicio.html";
       } else {
         alert(data.error);
       }
+
     });
   </script>
 </body>
