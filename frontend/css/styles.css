@@ -5,18 +5,32 @@
   padding: 0;
 }
 
+/* Fondo general */
 body {
   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
   background: #f4f7fc;
   color: #333;
   min-height: 100vh;
+}
+
+/* Contenedor más amplio */
+.container {
+  max-width: 1200px;
+  margin: auto;
+  padding: 40px 20px;
+}
+
+.wrapper {
   display: flex;
   justify-content: center;
   align-items: center;
+  min-height: calc(100vh - 60px); /* Ajusta este valor */
   padding: 20px;
+  box-sizing: border-box;
+  width: 100%;
 }
 
-.container {
+.container-inigistro {
   background: white;
   padding: 40px;
   border-radius: 12px;
@@ -26,11 +40,28 @@ body {
   text-align: center;
 }
 
+/* Títulos */
 h2, h3 {
   color: #1e88e5;
   margin-bottom: 15px;
 }
 
+/* Botones */
+button {
+  padding: 10px 20px;
+  background-color: #1e88e5;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  margin-left: 8px;
+}
+
+button:hover {
+  background-color: #1565c0;
+}
+
+/* Formularios */
 form input, form button {
   width: 100%;
   padding: 12px;
@@ -40,59 +71,7 @@ form input, form button {
   font-size: 14px;
 }
 
-button {
-  padding: 10px;
-  background-color: #1e88e5;
-  color: white;
-  border: none;
-  border-radius: 6px;
-  cursor: pointer;
-  width: 100%;
-  font-size: 16px;
-}
-
-button:hover {
-  background-color: #1565c0;
-}
-
-.link {
-  text-align: center;
-  margin-top: 10px;
-}
-
-.link a {
-  text-decoration: none;
-  color: #1e88e5;
-}
-
-.link a:hover {
-  text-decoration: underline;
-}
-
-.navbar {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  background: #1e88e5;
-  padding: 15px 20px;
-  color: white;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-
-.navbar h1 {
-  font-size: 20px;
-}
-
-.navbar .nav-links button {
-  background: white;
-  color: #1e88e5;
-  margin-left: 10px;
-  font-weight: bold;
-}
-
+/* Grid de productos */
 #otros, #mios, #matches, #publicaciones {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
@@ -100,6 +79,7 @@ button:hover {
   margin-top: 20px;
 }
 
+/* Tarjeta de producto */
 .producto {
   background: #fff;
   border-radius: 8px;
@@ -119,4 +99,37 @@ button:hover {
   object-fit: cover;
   border-radius: 6px;
   margin-bottom: 10px;
+}
+
+.link {
+  text-align: center;
+  margin-top: 10px;
+}
+
+.link a {
+  text-decoration: none;
+  color: #1e88e5;
+}
+
+/* Barra de navegación */
+.navbar {
+  height: 60px;
+  width: 100%;
+  background: #1e88e5;
+  padding: 15px 20px;
+  color: white;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.navbar h1 {
+  font-size: 20px;
+}
+
+.navbar .nav-links button {
+  background: white;
+  color: #1e88e5;
+  margin-left: 10px;
+  font-weight: bold;
 }

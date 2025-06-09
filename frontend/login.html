@@ -7,22 +7,24 @@
 </head>
 <body>
   <div class="navbar">
-    <h1>EcoIntercambio</h1>
+    <h1>ReÙtiles</h1>
   </div>
 
-  <div class="container">
-    <h2>Iniciar Sesión</h2>
-    <form id="loginForm">
-      <input type="email" name="email" placeholder="Correo electrónico" required>
-      <input type="password" name="password" placeholder="Contraseña" required>
-      <button type="submit">Iniciar sesión</button>
-    </form>
+  <div class="wrapper">
+    <div class="container-inigistro">
+      <h2>Iniciar Sesión</h2>
+      <form id="loginForm">
+        <input type="email" name="email" placeholder="Correo electrónico" required>
+        <input type="password" name="password" placeholder="Contraseña" required>
+        <button type="submit">Iniciar sesión</button>
+      </form>
 
-    <div class="link">
-      ¿No tienes cuenta? <a href="register.html">Regístrate aquí</a>
+      <div class="link">
+        ¿No tienes cuenta? <a href="register.html">Regístrate aquí</a>
+      </div>
     </div>
   </div>
-
+  
   <script>
     document.getElementById('loginForm').addEventListener('submit', async (e) => {
       e.preventDefault();
