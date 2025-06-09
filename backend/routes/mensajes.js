@@ -52,15 +52,16 @@ router.get('/no-leidos/:usuarioId', (req, res) => {
 
 router.get('/recibidos/:id', (req, res) => {
   const sql = `
-    SELECT mensajes.*, usuarios.nickname AS remitente
-    FROM mensajes
-    JOIN usuarios ON usuarios.id = mensajes.de_usuario
-    WHERE mensajes.para_usuario = ?
-    ORDER BY mensajes.creado_en DESC
+    SELECT m.mensaje, m.creado_en, u.nickname AS remitente
+    FROM mensajes m
+    JOIN usuarios u ON m.de_usuario = u.id
+    WHERE m.para_usuario = ?
+    ORDER BY m.creado_en DESC
   `;
-  db.query(sql, [req.params.id], (err, result) => {
-    if (err) return res.status(500).json({ error: "Error al obtener mensajes" });
-    res.json(result);
+
+  db.query(sql, [req.params.id], (err, results) => {
+    if (err) return res.status(500).json({ error: 'Error al obtener mensajes' });
+    res.json(results);
   });
 });
 

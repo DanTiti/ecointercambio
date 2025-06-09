@@ -36,6 +36,11 @@
           return;
         }
 
+        if (productos.length === 0) {
+          document.getElementById('misPublicaciones').innerHTML = '<p>No tienes publicaciones aún.</p>';
+          return;
+        }
+
         document.getElementById('misPublicaciones').innerHTML = productos.map(p => `
           <div class="producto">
             <img src="http://localhost:3000/uploads/${p.imagen}" alt="">

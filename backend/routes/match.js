@@ -90,18 +90,19 @@ router.get('/:userId', (req, res) => {
             }
             // Si la existente es igual o mejor, no hacemos nada para evitar duplicados
           } else {
-            // Agregamos nuevo match
-            misCoincidencias.push({
-              miProducto: producto.nombre,
-              buscaYo: producto.busca,
-              ofrezcoYo: producto.ofrece,
-              buscaEl: r.busca,
-              ofreceEl: r.ofrece,
-              nombreProductoEl: r.nombre,
-              nombreUsuario: r.nickname,
-              tipo: tipoNuevo,
-              imagen: r.imagen
-            });
+              misCoincidencias.push({
+                miProducto: producto.nombre,
+                buscaYo: producto.busca,
+                ofrezcoYo: producto.ofrece,
+                buscaEl: r.busca,
+                ofreceEl: r.ofrece,
+                nombreProductoEl: r.nombre,
+                nombreUsuario: r.nickname,
+                usuario: r.usuario_id, // 👈 esta línea es clave
+                tipo: tipoNuevo,
+                imagen: r.imagen
+              });
+
             clavesUnicas.set(clave, misCoincidencias.length - 1);
           }
         });
