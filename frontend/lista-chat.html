@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+    <div class="navbar">
+    <h1>ReÙtiles</h1>
+        <div class="nav-links">
+            <button onclick="location.href='inicio.html'">Inicio</button>
+            <button onclick="location.href='dashboard.html'">Publicar</button>
+            <button onclick="location.href='coincidencias.html'">Coincidencias</button>
+            <button onclick="location.href='mis-publicaciones.html'">Mis publicaciones</button>
+            <button onclick="location.href='historial.html'">Historial</button>
+            <button onclick="location.href='lista-chat.html'">Chats<span id="notif"></span></button>
+            <button onclick="localStorage.clear(); location.href='login.html'">Salir</button>
+        </div>
+    </div>
+
+    <div id="listaChats"></div>
+
+    <script>
+        const userId = localStorage.getItem('userId');
+
+        fetch(`http://localhost:3000/api/mensajes/chats/${userId}`)
+            .then(res => res.json())
+            .then(chats => {
+            const listaChatsDiv = document.getElementById('listaChats');
+            listaChatsDiv.innerHTML = '';
+            if (!Array.isArray(chats) || chats.length === 0) {
+                listaChatsDiv.innerHTML = '<p>No tienes chats activos.</p>';
+                return;
+            } else{
+                chats.forEach(chat => {
+                    const div = document.createElement('div');
+                    div.className = 'chat-item';
+                    div.innerHTML = `
+                        <span class="nickname">${chat.nickname}</span>
+                        <span class="lastMessage">${chat.lastMessage || 'Sin mensajes aún'}</span>
+                    `;
+                    div.onclick = () => {
+                        localStorage.setItem('contactoId', chat.userId);
+                        localStorage.setItem('contactoNombre', chat.nickname);
+                        location.href = 'chat.html';
+                };
+                listaChatsDiv.appendChild(div);
+                });
+            }
+        });
+    </script>
+</body>
+</html>

@@ -14,7 +14,7 @@
       <button onclick="location.href='dashboard.html'">Publicar</button>
       <button onclick="location.href='coincidencias.html'">Coincidencias</button>
       <button onclick="location.href='mis-publicaciones.html'">Mis publicaciones</button>
-      <button onclick="location.href='chat.html'">Bandeja</button>
+      <button onclick="location.href='historial.html'">Historial</button>
       <button onclick="localStorage.clear(); location.href='login.html'">Salir</button>
     </div>
   </div>
@@ -28,42 +28,46 @@
     <div id="estado"></div>
   </div>
 
-  <script>
-    const userId = localStorage.getItem('userId');
-    const contactoId = localStorage.getItem('contactoId');
-    const contactoNombre = localStorage.getItem('contactoNombre');
+<script>
+  const userId = localStorage.getItem('userId');
+  const contactoId = localStorage.getItem('contactoId');
+  const contactoNombre = localStorage.getItem('contactoNombre');
 
-    if (!userId || !contactoId) {
-      alert('Faltan datos del contacto. Redirigiendo...');
-      location.href = 'inicio.html';
-    }
+  if (!userId || !contactoId) {
+    alert('Faltan datos del contacto. Redirigiendo...');
+    location.href = 'inicio.html';
+  }
 
-    document.getElementById('nombreDestinatario').innerText = contactoNombre || 'usuario desconocido';
+  document.getElementById('nombreDestinatario').innerText = contactoNombre || 'usuario desconocido';
 
-    document.getElementById('formMensaje').addEventListener('submit', async (e) => {
-      e.preventDefault();
-      const mensaje = document.getElementById('mensaje').value.trim();
-      if (!mensaje) return;
+  document.getElementById('formMensaje').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const mensaje = document.getElementById('mensaje').value.trim();
+    if (!mensaje) return;
 
-      try {
-        const res = await fetch('http://localhost:3000/api/mensajes/enviar', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            de_usuario: userId,
-            para_usuario: contactoId,
-            mensaje: mensaje
-          })
-        });
+    try {
+      const res = await fetch('http://localhost:3000/api/mensajes/enviar', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          de_usuario: userId,
+          para_usuario: contactoId,
+          mensaje: mensaje
+        })
+      });
 
-        const data = await res.json();
-        document.getElementById('estado').innerText = data.message || 'Mensaje enviado correctamente.';
-        document.getElementById('formMensaje').reset();
-      } catch (err) {
-        console.error('Error al enviar el mensaje:', err);
-        document.getElementById('estado').innerText = 'Error al enviar el mensaje. Inténtalo más tarde.';
+      const data = await res.json();
+      if (res.ok) {
+        // Aquí rediriges a la página de chat individual
+        location.href = 'chat.html';
+      } else {
+        document.getElementById('estado').innerText = data.message || 'Error al enviar el mensaje.';
       }
-    });
-  </script>
+    } catch (err) {
+      console.error('Error al enviar el mensaje:', err);
+      document.getElementById('estado').innerText = 'Error al enviar el mensaje. Inténtalo más tarde.';
+    }
+  });
+</script>
 </body>
 </html>

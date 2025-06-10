@@ -1,8 +1,9 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8">
-  <title>Bandeja de entrada - EcoIntercambio</title>
+  <meta charset="UTF-8" />
+  <title>Chat en tiempo real - ReUtiles</title>
+  <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
   <link rel="stylesheet" href="css/styles.css">
 </head>
 <body>
@@ -13,40 +14,76 @@
       <button onclick="location.href='dashboard.html'">Publicar</button>
       <button onclick="location.href='coincidencias.html'">Coincidencias</button>
       <button onclick="location.href='mis-publicaciones.html'">Mis publicaciones</button>
-      <button onclick="location.href='chat.html'">Bandeja <span id="notif"></span></button>
+      <button onclick="location.href='historial.html'">Historial</button>
       <button onclick="localStorage.clear(); location.href='login.html'">Salir</button>
     </div>
   </div>
 
-  <div class="container">
-    <h2>Mensajes recibidos</h2>
-    <div id="recibidos"></div>
+  <div class="chat-container">
+    <h2>Chat con <span id="nombreReceptor"></span></h2>
+    <div id="mensajes" class="mensajes"></div>
+    <form id="formChat" class="form-chat">
+      <textarea id="textoMensaje" placeholder="Escribe tu mensaje..." required></textarea>
+      <button type="submit">Enviar</button>
+    </form>
   </div>
 
   <script>
+    const socket = io('http://localhost:3000');
     const userId = localStorage.getItem('userId');
-    if (!userId || userId === '0') location.href = 'login.html';
+    const contactoId = localStorage.getItem('contactoId');
+    const contactoNombre = localStorage.getItem('contactoNombre') || 'usuario desconocido';
 
-    fetch(`http://localhost:3000/api/mensajes/recibidos/${userId}`)
+    if (!userId || !contactoId) location.href = 'inicio.html';
+    document.getElementById('nombreReceptor').innerText = contactoNombre;
+
+    const mensajesDiv = document.getElementById('mensajes');
+
+    fetch(`http://localhost:3000/api/mensajes/entre/${userId}/${contactoId}`)
       .then(res => res.json())
-      .then(data => {
-        if (!Array.isArray(data)) {
-          document.getElementById('recibidos').innerText = 'No se pudieron cargar los mensajes.';
-          return;
-        }
-        if (data.length === 0) {
-          document.getElementById('recibidos').innerHTML = '<p>No tienes mensajes aún.</p>';
-          return;
-        }
-
-        document.getElementById('recibidos').innerHTML = data.map(m => `
-          <div class="producto">
-            <b>De:</b> ${m.remitente}<br>
-            <b>Mensaje:</b> ${m.mensaje}<br>
-            <small>${new Date(m.creado_en).toLocaleString()}</small>
-          </div>
-        `).join('');
+      .then(mensajes => {
+        mensajesDiv.innerHTML = '';
+        mensajes.forEach(m => {
+          const div = document.createElement('div');
+          const nombre = m.de_usuario == userId ? 'Tú' : m.nombre_otro_usuario;
+          div.className = m.de_usuario == userId ? 'mensaje propio' : 'mensaje ajeno';
+          div.innerHTML = `<b>${nombre}:</b> ${m.mensaje}`;
+          mensajesDiv.appendChild(div);
+        });
+        mensajesDiv.scrollTop = mensajesDiv.scrollHeight;
       });
+
+    socket.on(`mensaje-${userId}`, (data) => {
+      if (data.de_usuario != userId) {
+        const nuevo = document.createElement('div');
+        nuevo.className = 'mensaje ajeno';
+        nuevo.innerHTML = `<b>${contactoNombre}:</b> ${data.mensaje}`;
+        mensajesDiv.appendChild(nuevo);
+        mensajesDiv.scrollTop = mensajesDiv.scrollHeight;
+      }
+    });
+
+    document.getElementById('formChat').addEventListener('submit', (e) => {
+      e.preventDefault();
+      const texto = document.getElementById('textoMensaje').value.trim();
+      if (texto === '') return;
+
+      const mensajeObj = {
+        de_usuario: userId,
+        para_usuario: contactoId,
+        mensaje: texto
+      };
+
+      socket.emit('mensaje', mensajeObj);
+
+      const div = document.createElement('div');
+      div.className = 'mensaje propio';
+      div.innerHTML = `<b>Tú:</b> ${texto}`;
+      mensajesDiv.appendChild(div);
+      mensajesDiv.scrollTop = mensajesDiv.scrollHeight;
+
+      document.getElementById('textoMensaje').value = '';
+    });
   </script>
 </body>
 </html>

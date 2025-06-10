@@ -9,11 +9,11 @@
   <div class="navbar">
     <h1>ReÙtiles</h1>
     <div class="nav-links">
-      <button onclick="location.href='inicio.html'">Inicio</button>
       <button onclick="location.href='dashboard.html'">Publicar</button>
       <button onclick="location.href='coincidencias.html'">Coincidencias</button>
       <button onclick="location.href='mis-publicaciones.html'">Mis publicaciones</button>
-      <button onclick="location.href='chat.html'">Bandeja <span id="notif"></span></button>
+      <button onclick="location.href='historial.html'">Historial</button>
+      <button onclick="location.href='lista-chat.html'">Chats<span id="notif"></span></button>
       <button onclick="localStorage.clear(); location.href='login.html'">Salir</button>
     </div>
   </div>
@@ -46,7 +46,7 @@
 
       if (Array.isArray(productos)) {
         document.getElementById('publicaciones').innerHTML = productos.map(p => `
-          <div class="producto" onclick="abrirMensaje(${p.usuario_id}, '${encodeURIComponent(p.nombreUsuario)}')">
+          <div class="producto match-${p.tipo}" onclick="abrirMensaje(${p.usuario_id}, '${encodeURIComponent(p.nombreUsuario)}')">
             <img src="http://localhost:3000/uploads/${p.imagen}" alt="">
             <b>Usuario:</b> ${p.nombreUsuario}<br>
             Ofrece: ${p.ofrece}<br>

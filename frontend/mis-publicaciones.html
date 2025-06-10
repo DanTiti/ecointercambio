@@ -12,8 +12,8 @@
       <button onclick="location.href='inicio.html'">Inicio</button>
       <button onclick="location.href='dashboard.html'">Publicar</button>
       <button onclick="location.href='coincidencias.html'">Coincidencias</button>
-      <button onclick="location.href='mis-publicaciones.html'">Mis publicaciones</button>
-      <button onclick="location.href='chat.html'">Bandeja <span id="notif"></span></button>
+      <button onclick="location.href='historial.html'">Historial</button>
+      <button onclick="location.href='lista-chat.html'">Chats<span id="notif"></span></button>
       <button onclick="localStorage.clear(); location.href='login.html'">Salir</button>
     </div>
   </div>
@@ -42,14 +42,65 @@
         }
 
         document.getElementById('misPublicaciones').innerHTML = productos.map(p => `
-          <div class="producto">
+          <div class="producto" id="producto-${p.id}">
+            <div class="producto-eliminar">
+              <button class="eliminar" onclick="eliminarProducto(${p.id})">🗑️</button>
+            </div>
             <img src="http://localhost:3000/uploads/${p.imagen}" alt="">
-            <b>Publicado por:</b> ${p.nombreUsuario}<br>
+            <strong>${p.nombreUsuario}</strong><br>
             Ofrece: ${p.ofrece}<br>
-            Busca: ${p.busca}
+            Busca: ${p.busca}<br>
+            <button onclick="marcarIntercambiado(${p.id})">Marcar como intercambiado</button>
           </div>
         `).join('');
       });
+
+  async function eliminarProducto(id) {
+    const userId = localStorage.getItem('userId'); // O tu forma de obtenerlo
+    if (!confirm("¿Seguro que deseas eliminar este producto?")) return;
+
+    try {
+      const res = await fetch(`http://localhost:3000/api/productos/${id}`, {
+        method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ userId })
+      });
+
+      const data = await res.json();
+
+      if (res.ok) {
+        alert(data.mensaje);
+        document.getElementById(`producto-${id}`).remove();
+      } else {
+        alert(data.error || 'Error al eliminar');
+      }
+    } catch (err) {
+      alert('Error al conectar con el servidor');
+    }
+  }
+
+  function marcarIntercambiado(id) {
+    if (!confirm("¿Confirmas que este producto ya fue intercambiado?")) return;
+
+    fetch(`http://localhost:3000/api/productos/marcar-intercambiado/${id}`, {
+      method: 'PUT'
+    })
+      .then(res => res.json())
+      .then(data => {
+        alert(data.message);
+        // Elimina el producto del DOM directamente sin recargar
+        const elemento = document.getElementById(`producto-${id}`);
+        if (elemento) {
+          elemento.remove();
+        }
+      })
+      .catch(err => {
+        console.error("Error al marcar como intercambiado:", err);
+        alert("Ocurrió un error. Intenta de nuevo.");
+      });
+  }
   </script>
 </body>
 </html>

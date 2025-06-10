@@ -3,10 +3,27 @@ const router = express.Router();
 const db = require('../db');
 const stringSimilarity = require('string-similarity');
 
+// Mapa de categorías con sus elementos asociados
+const categorias = {
+  "geometría": ["escuadra", "regla", "transportador", "compas"],
+  "escritura": ["pluma", "lápiz", "lapicero", "bolígrafo", "marcador", "plumon"],
+  "corrección": ["borrador", "corrector", "goma"],
+  "papelería": ["hojas", "cuaderno", "folder", "carpeta"],
+  "apoyo":["sacapuntas", "tijeras"]
+};
+
 function limpiarTexto(texto) {
   return texto.toLowerCase()
     .normalize('NFD').replace(/[\u0300-\u036f]/g, '') // Quitar tildes
     .trim();
+}
+
+function mismaCategoria(a, b) {
+  a = limpiarTexto(a);
+  b = limpiarTexto(b);
+  return Object.values(categorias).some(lista =>
+    lista.includes(a) && lista.includes(b)
+  );
 }
 
 function esSimilarFuzzy(a, b, umbral = 0.7) {
@@ -51,7 +68,31 @@ router.get('/:userId', (req, res) => {
           const buscaSimilarPerfecto = esSimilarFuzzy(producto.ofrece, r.busca);
           const ofreceSimilarPerfecto = esSimilarFuzzy(producto.busca, r.ofrece);
 
-          const tipoNuevo = (buscaSimilarPerfecto && ofreceSimilarPerfecto) ? 'perfecto' : 'parcial';
+          let tipoNuevo = '';
+
+          // MATCH EXACTO
+          if (buscaSimilarPerfecto && ofreceSimilarPerfecto) {
+            tipoNuevo = 'perfecto';
+          }
+
+          // MATCH POR CATEGORÍA INTELIGENTE
+          else if (
+            mismaCategoria(producto.busca, r.ofrece) &&
+            mismaCategoria(producto.ofrece, r.busca)
+          ) {
+            tipoNuevo = 'inteligente';
+          }
+
+          // MATCH PARCIAL POR CATEGORÍA
+          else if (
+            mismaCategoria(producto.busca, r.ofrece) ||
+            mismaCategoria(producto.ofrece, r.busca)
+          ) {
+            tipoNuevo = 'parcial';
+          }
+
+          // Si no hay ningún tipo válido, salta este resultado
+          if (!tipoNuevo) return;
 
           if (
             tipoNuevo === 'parcial' && 

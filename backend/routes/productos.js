@@ -51,7 +51,7 @@ router.get('/mios/:id', (req, res) => {
     SELECT productos.*, usuarios.nickname AS nombreUsuario
     FROM productos
     JOIN usuarios ON productos.usuario_id = usuarios.id
-    WHERE productos.usuario_id = ?
+    WHERE productos.usuario_id = ? AND estado = 'activo'
   `;
   db.query(sql, [req.params.id], (err, results) => {
     if (err) return res.status(500).json({ error: 'Error al obtener tus productos' });
@@ -59,5 +59,39 @@ router.get('/mios/:id', (req, res) => {
   });
 });
 
+router.get('/intercambiados/:id', (req, res) => {
+  const sql = `
+    SELECT productos.*, usuarios.nickname as nombreUsuario
+    FROM productos 
+    JOIN usuarios ON productos.usuario_id = usuarios.id 
+    WHERE productos.usuario_id = ? AND productos.estado = 'intercambiado'
+  `;
+  db.query(sql, [req.params.id], (err, result) => {
+    if (err) return res.status(500).json({ error: 'Error al obtener productos completados' });
+    res.json(result);
+  });
+});
+
+router.put('/marcar-intercambiado/:id', (req, res) => {
+  const sql = "UPDATE productos SET estado = 'intercambiado' WHERE id = ?";
+  db.query(sql, [req.params.id], (err, result) => {
+    if (err) return res.status(500).json({ error: 'Error al actualizar producto' });
+    res.json({ message: 'Producto marcado como intercambiado' });
+  });
+});
+
+// DELETE /api/productos/:id
+router.delete('/:id', (req, res) => {
+  const id = req.params.id;
+  const userId = req.body.userId;  // o desde sesión si ya lo tienes
+
+  const sql = "DELETE FROM productos WHERE id = ? AND usuario_id = ?";
+  db.query(sql, [id, userId], (err, result) => {
+    if (err) return res.status(500).json({ error: 'Error al eliminar producto' });
+    if (result.affectedRows === 0) return res.status(404).json({ error: 'Producto no encontrado o no te pertenece' });
+
+    res.json({ mensaje: 'Producto eliminado correctamente' });
+  });
+});
 
 module.exports = router;

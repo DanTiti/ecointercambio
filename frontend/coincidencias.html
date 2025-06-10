@@ -11,9 +11,9 @@
     <div class="nav-links">
       <button onclick="location.href='inicio.html'">Inicio</button>
       <button onclick="location.href='dashboard.html'">Publicar</button>
-      <button onclick="location.href='coincidencias.html'">Coincidencias</button>
       <button onclick="location.href='mis-publicaciones.html'">Mis publicaciones</button>
-      <button onclick="location.href='chat.html'">Bandeja <span id="notif"></span></button>
+      <button onclick="location.href='historial.html'">Historial</button>
+      <button onclick="location.href='lista-chat.html'">Chats<span id="notif"></span></button>
       <button onclick="localStorage.clear(); location.href='login.html'">Salir</button>
     </div>
   </div>
@@ -36,14 +36,29 @@
       if (matches.length === 0) {
         contenedor.innerHTML = '<p>No se encontraron coincidencias aún.</p>';
       } else {
-        contenedor.innerHTML = matches.map(m => `
-          <div class="producto" onclick="abrirMensaje(${m.usuario}, '${encodeURIComponent(m.nombreUsuario)}')">
-            <img src="http://localhost:3000/uploads/${m.imagen}" alt="">
-            <strong>Match ${m.tipo.toUpperCase()}</strong><br>
-            Tú buscas: <b>${m.buscaYo}</b> | ofreces: <b>${m.ofrezcoYo}</b><br>
-            Usuario: <b>${m.nombreUsuario}</b> busca: <b>${m.buscaEl}</b> | ofrece: <b>${m.ofreceEl}</b><br>
-          </div>
-        `).join('');
+        contenedor.innerHTML = matches.map(m => {
+          let explicacion = '';
+          switch (m.tipo) {
+            case 'perfecto':
+              explicacion = '🟢 Coincidencia exacta – Tú y el otro usuario buscan y ofrecen justo lo que el otro necesita.';
+              break;
+            case 'inteligente':
+              explicacion = '🔵 Coincidencia por categoría – Ambos productos son similares o de la misma familia.';
+              break;
+            case 'parcial':
+              explicacion = '🟡 Coincidencia parcial – Hay coincidencia en uno de los elementos (busca u ofrece).';
+              break;
+          }
+          return `
+            <div class="producto match-${m.tipo}" onclick="abrirMensaje(${m.usuario}, '${encodeURIComponent(m.nombreUsuario)}')">
+              <img src="http://localhost:3000/uploads/${m.imagen}" alt="">
+              <strong>Match ${m.tipo.toUpperCase()}</strong><br>
+              <span class="explicacion-match" title="${explicacion}">ℹ️</span><br>
+              Tú buscas: <b>${m.buscaYo}</b> | ofreces: <b>${m.ofrezcoYo}</b><br>
+              Usuario: <b>${m.nombreUsuario}</b> busca: <b>${m.buscaEl}</b> | ofrece: <b>${m.ofreceEl}</b><br>
+            </div>
+          `;
+        }).join('');
       }
     }
 

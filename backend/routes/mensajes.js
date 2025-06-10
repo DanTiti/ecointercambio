@@ -16,16 +16,29 @@ router.post('/enviar', (req, res) => {
 router.get('/entre/:a/:b', (req, res) => {
   const { a, b } = req.params;
   const sql = `
-    SELECT * FROM mensajes 
-    WHERE (de_usuario = ? AND para_usuario = ?) 
-      OR (de_usuario = ? AND para_usuario = ?) 
-    ORDER BY creado_en ASC
-  `;
-  db.query(sql, [a, b, b, a], (err, results) => {
-    if (err) return res.status(500).json({ error: 'Error al obtener mensajes' });
-    res.status(200).json(results);
+    SELECT 
+      mensajes.*, 
+      u.nickname AS nombre_otro_usuario
+    FROM mensajes
+    JOIN usuarios u 
+      ON u.id = CASE 
+        WHEN mensajes.de_usuario = ? THEN mensajes.para_usuario
+        ELSE mensajes.de_usuario
+      END
+    WHERE 
+      (mensajes.de_usuario = ? AND mensajes.para_usuario = ?) OR
+      (mensajes.de_usuario = ? AND mensajes.para_usuario = ?)
+    ORDER BY mensajes.creado_en ASC`;
+  db.query(sql, [a, a, b, b, a], (err, resultados) => {
+    if (err) {
+      console.error(err);
+      res.status(500).send('Error al obtener mensajes');
+    } else {
+      res.json(resultados);
+    }
   });
 });
+
 
 router.post('/marcar-leidos', (req, res) => {
   const { de_usuario, para_usuario } = req.body;
@@ -50,18 +63,46 @@ router.get('/no-leidos/:usuarioId', (req, res) => {
   });
 });
 
-router.get('/recibidos/:id', (req, res) => {
+router.get('/chats/:id', (req, res) => {
+  const userId = req.params.id;
+
   const sql = `
-    SELECT m.mensaje, m.creado_en, u.nickname AS remitente
+    SELECT
+      CASE
+        WHEN m.de_usuario = ? THEN m.para_usuario
+        ELSE m.de_usuario
+      END AS otro_usuario_id,
+      u.nickname AS otro_usuario_nickname,
+      m.mensaje,
+      m.creado_en
     FROM mensajes m
-    JOIN usuarios u ON m.de_usuario = u.id
-    WHERE m.para_usuario = ?
+    JOIN usuarios u ON u.id = 
+      CASE
+        WHEN m.de_usuario = ? THEN m.para_usuario
+        ELSE m.de_usuario
+      END
+    WHERE m.de_usuario = ? OR m.para_usuario = ?
     ORDER BY m.creado_en DESC
   `;
 
-  db.query(sql, [req.params.id], (err, results) => {
-    if (err) return res.status(500).json({ error: 'Error al obtener mensajes' });
-    res.json(results);
+  db.query(sql, [userId, userId, userId, userId], (err, results) => {
+    if (err) return res.status(500).json({ error: 'Error en la consulta' });
+
+    const chatsMap = new Map();
+
+    for (const row of results) {
+      if (!chatsMap.has(row.otro_usuario_id)) {
+        chatsMap.set(row.otro_usuario_id, {
+          userId: row.otro_usuario_id,
+          nickname: row.otro_usuario_nickname,
+          lastMessage: row.mensaje,
+          lastDate: row.creado_en
+        });
+      }
+    }
+
+    const chats = Array.from(chatsMap.values());
+    res.json(chats);
   });
 });
 

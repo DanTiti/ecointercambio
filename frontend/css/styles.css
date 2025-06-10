@@ -72,15 +72,15 @@ form input, form button {
 }
 
 /* Grid de productos */
-#otros, #mios, #matches, #publicaciones {
+#otros, #matches, #publicaciones, #misPublicaciones, #intercambiados {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
   gap: 20px;
   margin-top: 20px;
 }
 
-/* Tarjeta de producto */
 .producto {
+  position: relative;
   background: #fff;
   border-radius: 8px;
   box-shadow: 0 0 8px rgba(0, 0, 0, 0.05);
@@ -133,3 +133,165 @@ form input, form button {
   margin-left: 10px;
   font-weight: bold;
 }
+
+.match-perfecto {
+  border-left: 6px solid #4caf50; /* verde */
+}
+
+.match-inteligente {
+  border-left: 6px solid #2196f3; /* azul */
+}
+
+.match-parcial {
+  border-left: 6px solid #ffc107; /* amarillo */
+}
+
+.explicacion-match {
+  cursor: help;
+  font-size: 14px;
+  margin-bottom: 5px;
+  display: inline-block;
+  color: #666;
+}
+
+.producto-eliminar {
+  position: absolute;
+  top: 5px;
+  right: 5px;
+}
+
+.eliminar {
+  background: rgba(255, 255, 255, 0.8);
+  border: none;
+  border-radius: 50%;
+  padding: 5px;
+  cursor: pointer;
+  font-size: 16px;
+  transition: background 0.2s ease;
+}
+
+.eliminar:hover {
+  background: #ffcccc;
+}
+
+/* Contenedor general de la lista de chats */
+#listaChats {
+  max-width: 700px;
+  margin: 40px auto;
+  padding: 0 20px;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+/* Cada chat como una "tarjeta" */
+#listaChats .chat-item {
+  display: flex;
+  flex-direction: column;
+  background-color: #ffffff;
+  border: 1px solid #dee2e6;
+  border-radius: 10px;
+  margin-bottom: 15px;
+  padding: 15px 20px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.06);
+  transition: background-color 0.25s ease;
+  cursor: pointer;
+}
+
+#listaChats .chat-item:hover {
+  background-color: #f1fdf5;
+}
+
+/* Nombre del contacto */
+.chat-item .nickname {
+  font-size: 18px;
+  font-weight: 600;
+  color: #1e88e5; /* verde Bootstrap */
+  margin-bottom: 5px;
+}
+
+/* Último mensaje */
+.chat-item .lastMessage {
+  font-size: 14px;
+  color: #495057;
+  font-style: italic;
+}
+
+/* Estilo del mensaje cuando no hay chats */
+#listaChats p {
+  text-align: center;
+  color: #888;
+  font-style: italic;
+  margin-top: 30px;
+}
+
+.chat-container {
+  max-width: 800px;
+  margin: 30px auto;
+  background-color: white;
+  padding: 20px;
+  border-radius: 10px;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+}
+
+.chat-container h2 {
+  margin-bottom: 20px;
+}
+
+.mensajes {
+  height: 300px;
+  overflow-y: auto;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  padding: 10px;
+  margin-bottom: 15px;
+  background-color: #fdfdfd;
+}
+
+.mensaje {
+  padding: 8px;
+  margin-bottom: 10px;
+  border-radius: 8px;
+  max-width: 70%;
+  clear: both;
+}
+
+.mensaje.propio {
+  background-color: #dcf8c6;
+  margin-left: auto;
+  text-align: right;
+}
+
+.mensaje.ajeno {
+  background-color: #ffffff;
+  border: 1px solid #ddd;
+}
+
+.form-chat {
+  display: flex;
+  flex-direction: column;
+}
+
+.form-chat textarea {
+  resize: none;
+  padding: 10px;
+  font-size: 14px;
+  border-radius: 6px;
+  border: 1px solid #ccc;
+  margin-bottom: 10px;
+}
+
+.form-chat button {
+  align-self: flex-end;
+  background-color: #006699;
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.form-chat button:hover {
+  background-color: #004466;
+}
+
+
+
