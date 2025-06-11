@@ -27,6 +27,27 @@
 
   <script>
     const userId = localStorage.getItem('userId');
+    fetch(`http://localhost:3000/api/match/nuevas/${userId}`)
+      .then(res => res.json())
+      .then(data => {
+        if (Array.isArray(data) && data.length > 0) {
+          const match = data[0]; // solo mostramos la más reciente
+          const modal = document.createElement('div');
+          modal.className = 'modal-match';
+          modal.innerHTML = `
+            <div class="modal-content">
+              <h3>🎉 ¡Nuevo Match Perfecto!</h3>
+              <p><b>${match.nombreUsuario}</b> ofrece <b>${match.ofreceEl}</b> y busca <b>${match.buscaEl}</b></p>
+              <button onclick="abrirMensaje(${match.usuario}, '${encodeURIComponent(match.nombreUsuario)}')">Enviar mensaje</button>
+              <button onclick="this.parentElement.parentElement.remove()">Cerrar</button>
+            </div>
+          `;
+          document.body.appendChild(modal);
+        }
+      });
+    
+    fetch(`http://localhost:3000/api/match/revisado/${userId}`, { method: 'PUT' });
+
     if (!userId || userId === '0') {
       location.href = 'login.html';
     }

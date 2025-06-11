@@ -6,6 +6,7 @@ const { Server } = require('socket.io');
 const path = require('path');
 const multer = require('multer');
 const db = require('./db');  // conexión a base de datos
+const matchAlertRoutes = require('./routes/matchAlert');
 
 // Crear instancia de Express primero
 const app = express();
@@ -36,7 +37,7 @@ app.use('/api/productos', require('./routes/productos'));
 app.use('/api/match', require('./routes/match'));
 app.use('/api/mensajes', require('./routes/mensajes'));
 app.use('/api/sugerencias', require('./routes/sugerencias'));
-
+app.use('/api/match', matchAlertRoutes);
 
 // Crear servidor HTTP y conectar Socket.IO
 const server = http.createServer(app);
@@ -48,33 +49,30 @@ const io = new Server(server, {
   }
 });
 
-// Socket.IO - chat en tiempo real
 io.on('connection', (socket) => {
   console.log('Cliente conectado:', socket.id);
 
-  socket.on('mensaje', (data) => {
+  socket.on('mensaje', async (data) => {
     const { de_usuario, para_usuario, mensaje } = data;
 
-    // Guardar mensaje en la base de datos
-    const sql = "INSERT INTO mensajes (de_usuario, para_usuario, mensaje) VALUES (?, ?, ?)";
-    db.query(sql, [de_usuario, para_usuario, mensaje], (err) => {
-      if (err) {
-        console.error('Error al guardar mensaje:', err);
-      } else {
-        // Emitir el mensaje al remitente y al receptor
-        io.emit(`mensaje-${de_usuario}`, {
-          de_usuario,
-          mensaje,
-          creado_en: new Date().toISOString()
-        });
+    try {
+      const sql = "INSERT INTO mensajes (de_usuario, para_usuario, mensaje) VALUES (?, ?, ?)";
+      await db.query(sql, [de_usuario, para_usuario, mensaje]);
 
-        io.emit(`mensaje-${para_usuario}`, {
-          de_usuario,
-          mensaje,
-          creado_en: new Date().toISOString()
-        });
-      }
-    });
+      io.emit(`mensaje-${de_usuario}`, {
+        de_usuario,
+        mensaje,
+        creado_en: new Date().toISOString()
+      });
+
+      io.emit(`mensaje-${para_usuario}`, {
+        de_usuario,
+        mensaje,
+        creado_en: new Date().toISOString()
+      });
+    } catch (err) {
+      console.error('Error al guardar mensaje:', err);
+    }
   });
 
   socket.on('disconnect', () => {

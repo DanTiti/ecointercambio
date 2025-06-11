@@ -3,17 +3,20 @@ const router = express.Router();
 const db = require('../db');
 
 // Enviar mensaje
-router.post('/enviar', (req, res) => {
+router.post('/enviar', async (req, res) => {
   const { de_usuario, para_usuario, mensaje } = req.body;
   const sql = "INSERT INTO mensajes (de_usuario, para_usuario, mensaje) VALUES (?, ?, ?)";
-  db.query(sql, [de_usuario, para_usuario, mensaje], (err) => {
-    if (err) return res.status(500).json({ error: 'Error al enviar mensaje' });
+  try {
+    await db.query(sql, [de_usuario, para_usuario, mensaje]);
     res.status(200).json({ message: 'Mensaje enviado' });
-  });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Error al enviar mensaje' });
+  }
 });
 
 // Ver mensajes entre dos usuarios
-router.get('/entre/:a/:b', (req, res) => {
+router.get('/entre/:a/:b', async (req, res) => {
   const { a, b } = req.params;
   const sql = `
     SELECT 
@@ -28,28 +31,32 @@ router.get('/entre/:a/:b', (req, res) => {
     WHERE 
       (mensajes.de_usuario = ? AND mensajes.para_usuario = ?) OR
       (mensajes.de_usuario = ? AND mensajes.para_usuario = ?)
-    ORDER BY mensajes.creado_en ASC`;
-  db.query(sql, [a, a, b, b, a], (err, resultados) => {
-    if (err) {
-      console.error(err);
-      res.status(500).send('Error al obtener mensajes');
-    } else {
-      res.json(resultados);
-    }
-  });
+    ORDER BY mensajes.creado_en ASC
+  `;
+  try {
+    const [resultados] = await db.query(sql, [a, a, b, b, a]);
+    res.json(resultados);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Error al obtener mensajes' });
+  }
 });
 
-
-router.post('/marcar-leidos', (req, res) => {
+// Marcar mensajes como leídos
+router.post('/marcar-leidos', async (req, res) => {
   const { de_usuario, para_usuario } = req.body;
   const sql = `UPDATE mensajes SET leido = 1 WHERE de_usuario = ? AND para_usuario = ?`;
-  db.query(sql, [de_usuario, para_usuario], (err) => {
-    if (err) return res.status(500).json({ error: 'Error al marcar leídos' });
+  try {
+    await db.query(sql, [de_usuario, para_usuario]);
     res.status(200).json({ message: 'Mensajes marcados como leídos' });
-  });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Error al marcar leídos' });
+  }
 });
 
-router.get('/no-leidos/:usuarioId', (req, res) => {
+// Contar mensajes no leídos
+router.get('/no-leidos/:usuarioId', async (req, res) => {
   const usuarioId = req.params.usuarioId;
   const sql = `
     SELECT de_usuario, COUNT(*) as cantidad 
@@ -57,15 +64,18 @@ router.get('/no-leidos/:usuarioId', (req, res) => {
     WHERE para_usuario = ? AND leido = 0 
     GROUP BY de_usuario
   `;
-  db.query(sql, [usuarioId], (err, results) => {
-    if (err) return res.status(500).json({ error: 'Error al contar mensajes no leídos' });
+  try {
+    const [results] = await db.query(sql, [usuarioId]);
     res.status(200).json(results);
-  });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Error al contar mensajes no leídos' });
+  }
 });
 
-router.get('/chats/:id', (req, res) => {
+// Obtener lista de chats
+router.get('/chats/:id', async (req, res) => {
   const userId = req.params.id;
-
   const sql = `
     SELECT
       CASE
@@ -85,8 +95,8 @@ router.get('/chats/:id', (req, res) => {
     ORDER BY m.creado_en DESC
   `;
 
-  db.query(sql, [userId, userId, userId, userId], (err, results) => {
-    if (err) return res.status(500).json({ error: 'Error en la consulta' });
+  try {
+    const [results] = await db.query(sql, [userId, userId, userId, userId]);
 
     const chatsMap = new Map();
 
@@ -103,7 +113,10 @@ router.get('/chats/:id', (req, res) => {
 
     const chats = Array.from(chatsMap.values());
     res.json(chats);
-  });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Error en la consulta' });
+  }
 });
 
 module.exports = router;
