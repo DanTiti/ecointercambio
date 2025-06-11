@@ -35,6 +35,8 @@ app.use('/api/auth', require('./routes/auth'));
 app.use('/api/productos', require('./routes/productos'));
 app.use('/api/match', require('./routes/match'));
 app.use('/api/mensajes', require('./routes/mensajes'));
+app.use('/api/sugerencias', require('./routes/sugerencias'));
+
 
 // Crear servidor HTTP y conectar Socket.IO
 const server = http.createServer(app);

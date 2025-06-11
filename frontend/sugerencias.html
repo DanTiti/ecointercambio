@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <title>Sugerencias - ReUtiles</title>
+  <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+  <div class="navbar">
+    <h1>ReUtiles</h1>
+    <div class="nav-links">
+      <button onclick="location.href='inicio.html'">Inicio</button>
+      <button onclick="location.href='dashboard.html'">Publicar</button>
+      <button onclick="location.href='coincidencias.html'">Coincidencias</button>
+      <button onclick="location.href='mis-publicaciones.html'">Mis publicaciones</button>
+      <button onclick="location.href='historial.html'">Historial</button>
+      <button onclick="location.href='chat.html'">Bandeja</button>
+      <button onclick="localStorage.clear(); location.href='login.html'">Salir</button>
+    </div>
+  </div>
+
+  <div class="container">
+    <h2>Sugerencias para ti</h2>
+    <div id="sugerencias"></div>
+  </div>
+
+  <script>
+    const userId = localStorage.getItem('userId');
+    if (!userId || userId === '0') location.href = 'login.html';
+
+    function abrirMensaje(usuarioId, nombreUsuario) {
+      const decoded = decodeURIComponent(nombreUsuario);
+      localStorage.setItem('contactoId', usuarioId);
+      localStorage.setItem('contactoNombre', decoded);
+      location.href = 'enviar-mensaje.html';
+    }
+
+    async function cargarSugerencias() {
+      const res = await fetch(`http://localhost:3000/api/sugerencias/${userId}`);
+      const sugerencias = await res.json();
+      const contenedor = document.getElementById('sugerencias');
+
+      if (!Array.isArray(sugerencias) || sugerencias.length === 0) {
+        contenedor.innerHTML = '<p>No se encontraron sugerencias por ahora.</p>';
+        return;
+      }
+
+      contenedor.innerHTML = sugerencias.map(p => `
+        <div class="producto" onclick="abrirMensaje(${p.usuario_id}, '${encodeURIComponent(p.nombreUsuario)}')">
+          <img src="http://localhost:3000/uploads/${p.imagen}" alt="">
+          <b>${p.nombreUsuario}</b> ofrece: <b>${p.loQueOfrece}</b><br>
+          Tú estás buscando: <b>${p.loQueBusco}</b><br>
+          Producto: <b>${p.encontrado}</b>
+        </div>
+      `).join('');
+    }
+
+    cargarSugerencias();
+  </script>
+</body>
+</html>
