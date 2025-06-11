@@ -68,6 +68,7 @@ router.get('/:userId', async (req, res) => {
             if (tipoNuevo === 'perfecto' && existente.tipo !== 'perfecto') {
               misCoincidencias[idx] = {
                 miProducto: producto.nombre,
+                miImagen: producto.imagen,
                 buscaYo: producto.busca,
                 ofrezcoYo: producto.ofrece,
                 buscaEl: r.busca,
@@ -81,6 +82,7 @@ router.get('/:userId', async (req, res) => {
           } else {
             misCoincidencias.push({
               miProducto: producto.nombre,
+              miImagen: producto.imagen,
               buscaYo: producto.busca,
               ofrezcoYo: producto.ofrece,
               buscaEl: r.busca,

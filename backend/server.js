@@ -20,13 +20,16 @@ app.use(cors(corsOptions)); // Aplica CORS correctamente
 
 // Middleware
 app.use(bodyParser.json());
-app.use('/uploads', express.static(path.join(__dirname, '..', 'uploads')));
+const uploadsPath = path.join(__dirname, '..', 'uploads');
+app.use('/uploads', express.static(uploadsPath));
 
 // Multer para subir imágenes
 const storage = multer.diskStorage({
-  destination: './uploads/',
+  destination: (req, file, cb) => {
+    cb(null, path.join(__dirname, '..', 'uploads')); // Guardar fuera de /backend
+  },
   filename: (req, file, cb) => {
-    cb(null, Date.now() + path.extname(file.originalname));
+    cb(null, Date.now() + '-' + file.originalname);
   }
 });
 const upload = multer({ storage });
