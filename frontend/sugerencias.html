@@ -36,7 +36,7 @@
     }
 
     async function cargarSugerencias() {
-      const res = await fetch(`https://ecointercambio-backend.onrender.com/api/sugerencias/${userId}`);
+      const res = await fetch(`https://ecointercambio-backend-0ts7.onrender.com/api/sugerencias/${userId}`);
       const sugerencias = await res.json();
       const contenedor = document.getElementById('sugerencias');
 
@@ -47,13 +47,13 @@
 
       contenedor.innerHTML = sugerencias.map(p => `
         <div class="producto" onclick="abrirMensaje(${p.usuario_id}, '${encodeURIComponent(p.nombreUsuario)}')">
-          <img src="https://ecointercambio-backend.onrender.com/uploads/${p.imagen}" alt="">
+          <img src="https://ecointercambio-backend-0ts7.onrender.com/uploads/${p.imagen}" alt="">
           <b>${p.nombreUsuario}</b> ofrece: <b>${p.loQueOfrece}</b><br>
           Tú estás buscando: <b>${p.loQueBusco}</b><br>
         </div>
       `).join('');
     }
-    
+
     cargarSugerencias();
   </script>
 </body>
