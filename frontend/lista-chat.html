@@ -31,16 +31,10 @@
             fetch(`https://ecointercambio-backend-0ts7.onrender.com/api/mensajes/no-leidos/${userId}`)
                 .then(res => res.json())
                 .then(data => {
-                    const totalChatsNuevos = data.length; 
-
-                    if (totalChatsNuevos > 0) {
-                        notifSpan.innerText = ` (${totalChatsNuevos})`;
-                        notifSpan.style.color = "red";
-                    } else {
-                        notifSpan.innerText = '';
-                    }
-                })
-                .catch(err => console.error("Error en contador:", err));
+                    const totalPersonas = data.length; 
+                    notifSpan.innerText = totalPersonas > 0 ? ` (${totalPersonas})` : '';
+                    if (totalPersonas > 0) notifSpan.style.color = "red";
+                });
         }
 
         fetch(`https://ecointercambio-backend-0ts7.onrender.com/api/mensajes/chats/${userId}`)
@@ -48,20 +42,16 @@
             .then(chats => {
                 const listaChatsDiv = document.getElementById('listaChats');
                 listaChatsDiv.innerHTML = '';
-
                 if (!Array.isArray(chats) || chats.length === 0) {
                     listaChatsDiv.innerHTML = '<p>No tienes chats activos.</p>';
-                    return;
                 } else {
                     chats.forEach(chat => {
                         const div = document.createElement('div');
                         div.className = 'chat-item';
-                        
                         div.innerHTML = `
                             <span class="nickname">${chat.nickname}</span>
                             <span class="lastMessage">${chat.lastMessage || 'Sin mensajes aún'}</span>
                         `;
-
                         div.onclick = () => {
                             localStorage.setItem('contactoId', chat.userId);
                             localStorage.setItem('contactoNombre', chat.nickname);
@@ -73,7 +63,6 @@
             });
 
         actualizarContadorGlobal();
-
     </script>
 </body>
 </html>

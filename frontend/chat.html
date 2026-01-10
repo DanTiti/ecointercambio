@@ -31,109 +31,94 @@
   </div>
 
   <script>
-      const socket = io('https://ecointercambio-backend-0ts7.onrender.com');
-      const userId = localStorage.getItem('userId');
-      const contactoId = localStorage.getItem('contactoId');
-      const contactoNombre = localStorage.getItem('contactoNombre') || 'usuario desconocido';
+    const socket = io('https://ecointercambio-backend-0ts7.onrender.com');
+    const userId = localStorage.getItem('userId');
+    const contactoId = localStorage.getItem('contactoId');
+    const contactoNombre = localStorage.getItem('contactoNombre') || 'usuario desconocido';
 
-      if (!userId || !contactoId) location.href = 'inicio.html';
-      document.getElementById('nombreReceptor').innerText = contactoNombre;
+    if (!userId || !contactoId) location.href = 'inicio.html';
+    document.getElementById('nombreReceptor').innerText = contactoNombre;
 
-      const mensajesDiv = document.getElementById('mensajes');
-      const textoMensaje = document.getElementById('textoMensaje');
-      const formChat = document.getElementById('formChat');
-      const notifSpan = document.getElementById('notif');
+    const mensajesDiv = document.getElementById('mensajes');
+    const textoMensaje = document.getElementById('textoMensaje');
+    const formChat = document.getElementById('formChat');
+    const notifSpan = document.getElementById('notif');
 
-      function actualizarContadorGlobal() {
-        fetch(`https://ecointercambio-backend-0ts7.onrender.com/api/mensajes/no-leidos/${userId}`)
-          .then(res => res.json())
-          .then(data => {
-            const chatsDeOtros = data.filter(item => item.de_usuario != contactoId);
-            const totalChatsNuevos = chatsDeOtros.length; 
-
-            if (totalChatsNuevos > 0) {
-              notifSpan.innerText = ` (${totalChatsNuevos})`;
-              notifSpan.style.color = "red";
-            } else {
-              notifSpan.innerText = '';
-            }
-          })
-          .catch(err => console.error("Error en contador:", err));
-      }
-
-      function marcarMensajesComoLeidos() {
-        fetch(`https://ecointercambio-backend-0ts7.onrender.com/api/mensajes/marcar-leidos`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ 
-            de_usuario: contactoId, 
-            para_usuario: userId 
-          })
-        })
-        .then(() => {
-          actualizarContadorGlobal();
-        })
-        .catch(err => console.error("Error al marcar leídos:", err));
-      }
-
-      fetch(`https://ecointercambio-backend-0ts7.onrender.com/api/mensajes/entre/${userId}/${contactoId}`)
+    function actualizarContadorGlobal() {
+      fetch(`https://ecointercambio-backend-0ts7.onrender.com/api/mensajes/no-leidos/${userId}`)
         .then(res => res.json())
-        .then(mensajes => {
-          mensajesDiv.innerHTML = '';
-          mensajes.forEach(m => {
-            const div = document.createElement('div');
-            const nombre = m.de_usuario == userId ? 'Tú' : m.nombre_otro_usuario;
-            div.className = m.de_usuario == userId ? 'mensaje propio' : 'mensaje ajeno';
-            div.innerHTML = `<b>${nombre}:</b> ${m.mensaje}`;
-            mensajesDiv.appendChild(div);
-          });
-          mensajesDiv.scrollTop = mensajesDiv.scrollHeight;
-          marcarMensajesComoLeidos();
+        .then(data => {
+          const chatsDeOtros = data.filter(item => item.de_usuario != contactoId);
+          const totalChatsNuevos = chatsDeOtros.length;
+
+          if (totalChatsNuevos > 0) {
+            notifSpan.innerText = ` (${totalChatsNuevos})`;
+            notifSpan.style.color = "red";
+          } else {
+            notifSpan.innerText = '';
+          }
         });
+    }
 
-      socket.on(`mensaje-${userId}`, (data) => {
-        if (data.de_usuario == contactoId) {
-          const nuevo = document.createElement('div');
-          nuevo.className = 'mensaje ajeno';
-          nuevo.innerHTML = `<b>${contactoNombre}:</b> ${data.mensaje}`;
-          mensajesDiv.appendChild(nuevo);
-          mensajesDiv.scrollTop = mensajesDiv.scrollHeight;
+    function marcarMensajesComoLeidos() {
+      fetch(`https://ecointercambio-backend-0ts7.onrender.com/api/mensajes/marcar-leidos`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ de_usuario: contactoId, para_usuario: userId })
+      })
+      .then(() => actualizarContadorGlobal());
+    }
 
-          marcarMensajesComoLeidos();
-        } else {
-          actualizarContadorGlobal();
-        }
-      });
-
-      formChat.addEventListener('submit', (e) => {
-        e.preventDefault();
-        const texto = textoMensaje.value.trim();
-        if (texto === '') return;
-
-        const mensajeObj = {
-          de_usuario: userId,
-          para_usuario: contactoId,
-          mensaje: texto
-        };
-
-        socket.emit('mensaje', mensajeObj);
-
-        const div = document.createElement('div');
-        div.className = 'mensaje propio';
-        div.innerHTML = `<b>Tú:</b> ${texto}`;
-        mensajesDiv.appendChild(div);
+    fetch(`https://ecointercambio-backend-0ts7.onrender.com/api/mensajes/entre/${userId}/${contactoId}`)
+      .then(res => res.json())
+      .then(mensajes => {
+        mensajesDiv.innerHTML = '';
+        mensajes.forEach(m => {
+          const div = document.createElement('div');
+          const nombre = m.de_usuario == userId ? 'Tú' : m.nombre_otro_usuario;
+          div.className = m.de_usuario == userId ? 'mensaje propio' : 'mensaje ajeno';
+          div.innerHTML = `<b>${nombre}:</b> ${m.mensaje}`;
+          mensajesDiv.appendChild(div);
+        });
         mensajesDiv.scrollTop = mensajesDiv.scrollHeight;
-        textoMensaje.value = '';
+        marcarMensajesComoLeidos();
       });
 
-      textoMensaje.addEventListener('keydown', (e) => {
-        if (e.key === 'Enter' && !e.shiftKey) {
-          e.preventDefault();
-          formChat.requestSubmit();
-        }
-      });
-      actualizarContadorGlobal();
+    socket.on(`mensaje-${userId}`, (data) => {
+      if (data.de_usuario == contactoId) {
+        const nuevo = document.createElement('div');
+        nuevo.className = 'mensaje ajeno';
+        nuevo.innerHTML = `<b>${contactoNombre}:</b> ${data.mensaje}`;
+        mensajesDiv.appendChild(nuevo);
+        mensajesDiv.scrollTop = mensajesDiv.scrollHeight;
+        marcarMensajesComoLeidos();
+      } else {
+        actualizarContadorGlobal();
+      }
+    });
 
+    formChat.addEventListener('submit', (e) => {
+      e.preventDefault();
+      const texto = textoMensaje.value.trim();
+      if (texto === '') return;
+      socket.emit('mensaje', { de_usuario: userId, para_usuario: contactoId, mensaje: texto });
+      
+      const div = document.createElement('div');
+      div.className = 'mensaje propio';
+      div.innerHTML = `<b>Tú:</b> ${texto}`;
+      mensajesDiv.appendChild(div);
+      mensajesDiv.scrollTop = mensajesDiv.scrollHeight;
+      textoMensaje.value = '';
+    });
+
+    textoMensaje.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter' && !e.shiftKey) {
+        e.preventDefault();
+        formChat.requestSubmit();
+      }
+    });
+
+    actualizarContadorGlobal();
   </script>
 </body>
 </html>
