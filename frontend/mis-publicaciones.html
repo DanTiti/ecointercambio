@@ -28,7 +28,7 @@
     const userId = localStorage.getItem('userId');
     if (!userId || userId === '0') location.href = 'login.html';
 
-    fetch(`http://localhost:3000/api/productos/mios/${userId}`)
+    fetch(`https://ecointercambio-backend-0ts7.onrender.com/api/productos/mios/${userId}`)
       .then(res => res.json())
       .then(productos => {
         if (!Array.isArray(productos)) {
@@ -47,7 +47,7 @@
             <div class="producto-eliminar">
               <button class="eliminar" onclick="eliminarProducto(${p.id})">🗑️</button>
             </div>
-            <img src="http://localhost:3000/uploads/${p.imagen}" alt="">
+            <img src="https://ecointercambio-backend-0ts7.onrender.com/uploads/${p.imagen}" alt="">
             <strong>${p.nombreUsuario}</strong><br>
             Ofrece: ${p.ofrece}<br>
             Busca: ${p.busca}<br>
@@ -61,7 +61,7 @@
     if (!confirm("¿Seguro que deseas eliminar este producto?")) return;
 
     try {
-      const res = await fetch(`http://localhost:3000/api/productos/${id}`, {
+      const res = await fetch(`https://ecointercambio-backend-0ts7.onrender.com/api/productos/${id}`, {
         method: 'DELETE',
         headers: {
           'Content-Type': 'application/json'
@@ -85,7 +85,7 @@
   function marcarIntercambiado(id) {
     if (!confirm("¿Confirmas que este producto ya fue intercambiado?")) return;
 
-    fetch(`http://localhost:3000/api/productos/marcar-intercambiado/${id}`, {
+    fetch(`https://ecointercambio-backend-0ts7.onrender.com/api/productos/marcar-intercambiado/${id}`, {
       method: 'PUT'
     })
       .then(res => res.json())

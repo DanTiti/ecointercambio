@@ -29,7 +29,7 @@
     if (!userId || userId === '0') location.href = 'login.html';
 
     async function cargarMatches() {
-      const res = await fetch(`https://ecointercambio-backend.onrender.com/api/match/${userId}`);
+      const res = await fetch(`https://ecointercambio-backend-0ts7.onrender.com/api/match/${userId}`);
       const matches = await res.json();
 
       const contenedor = document.getElementById('matches');
@@ -52,7 +52,7 @@
           }
           return `
             <div class="producto match-${m.tipo}" onclick="abrirMensaje(${m.usuario}, '${encodeURIComponent(m.nombreUsuario)}')">
-              <img src="https://ecointercambio-backend.onrender.com/uploads/${m.imagen}" alt="">
+              <img src="https://ecointercambio-backend-0ts7.onrender.com/uploads/${m.imagen}" alt="">
               <strong>Match ${m.tipo.toUpperCase()}</strong><br>
               <span class="explicacion-match" title="${explicacion}">ℹ️</span><br>
               Tú buscas: <b>${m.buscaYo}</b> | ofreces: <b>${m.ofrezcoYo}</b><br>
@@ -63,7 +63,7 @@
       }
     }
 
-    fetch(`https://ecointercambio-backend.onrender.com/api/mensajes/no-leidos/${userId}`)
+    fetch(`https://ecointercambio-backend-0ts7.onrender.com/api/mensajes/no-leidos/${userId}`)
       .then(res => res.json())
       .then(data => {
         if (Array.isArray(data)) {

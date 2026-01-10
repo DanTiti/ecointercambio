@@ -29,7 +29,7 @@
         if (!userId || userId === '0') location.href = 'login.html';
 
         function cargarHistorial() {
-        fetch(`http://localhost:3000/api/productos/intercambiados/${userId}`)
+        fetch(`https://ecointercambio-backend.onrender.com/api/productos/intercambiados/${userId}`)
             .then(res => res.json())
             .then(productos => {
             const contenedor = document.getElementById('intercambiados');
@@ -55,7 +55,7 @@
         }
 
         // Notificación de mensajes no leídos
-        fetch(`http://localhost:3000/api/mensajes/no-leidos/${userId}`)
+        fetch(`https://ecointercambio-backend.onrender.com/api/mensajes/no-leidos/${userId}`)
         .then(res => res.json())
         .then(data => {
             if (Array.isArray(data)) {
@@ -70,7 +70,7 @@
         if (!confirm("¿Seguro que deseas eliminar este producto?")) return;
 
         try {
-        const res = await fetch(`http://localhost:3000/api/productos/${id}`, {
+        const res = await fetch(`https://ecointercambio-backend-0ts7.onrender.com/api/productos/${id}`, {
             method: 'DELETE',
             headers: {
             'Content-Type': 'application/json'

@@ -40,7 +40,7 @@
       const formData = new FormData(e.target);
       formData.append('usuario_id', userId);
 
-      const res = await fetch('http://localhost:3000/api/productos/add', {
+      const res = await fetch('https://ecointercambio-backend.onrender.com/api/productos/add', {
         method: 'POST',
         body: formData
       });
@@ -52,7 +52,7 @@
     }
 
     async function cargarCoincidencias() {
-      const res = await fetch(`http://localhost:3000/api/match/${userId}`);
+      const res = await fetch(`https://ecointercambio-backend-0ts7.onrender.com/api/match/${userId}`);
       const coincidencias = await res.json();
 
       if (coincidencias.length > 0) {
@@ -60,7 +60,7 @@
           <strong>¡Coincidencias encontradas!</strong><br>
           ${coincidencias.map(c => `
             <div class="producto" onclick="abrirMensaje(${c.usuario}, '${encodeURIComponent(c.nombreUsuario)}')">
-              <img src="http://localhost:3000/uploads/${c.imagen}" alt="">
+              <img src="https://ecointercambio-backend-0ts7.onrender.com/uploads/${c.imagen}" alt="">
               Tú buscas: ${c.buscaYo} | ofreces: ${c.ofrezcoYo}<br>
               Usuario: <b>${c.nombreUsuario}</b> busca: ${c.buscaEl} | ofrece: ${c.ofreceEl}<br>
               Producto: ${c.nombreProductoEl}

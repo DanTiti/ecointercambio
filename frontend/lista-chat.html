@@ -25,7 +25,7 @@
     <script>
         const userId = localStorage.getItem('userId');
 
-        fetch(`http://localhost:3000/api/mensajes/chats/${userId}`)
+        fetch(`https://ecointercambio-backend-0ts7.onrender.com/api/mensajes/chats/${userId}`)
             .then(res => res.json())
             .then(chats => {
             const listaChatsDiv = document.getElementById('listaChats');

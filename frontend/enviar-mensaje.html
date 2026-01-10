@@ -46,7 +46,7 @@
     if (!mensaje) return;
 
     try {
-      const res = await fetch('http://localhost:3000/api/mensajes/enviar', {
+      const res = await fetch('https://ecointercambio-backend-0ts7.onrender.com/api/mensajes/enviar', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

@@ -27,7 +27,7 @@
 
   <script>
     const userId = localStorage.getItem('userId');
-    fetch(`http://localhost:3000/api/match/nuevas/${userId}`)
+    fetch(`https://ecointercambio-backend.onrender.com/api/match/nuevas/${userId}`)
       .then(res => res.json())
       .then(data => {
         if (Array.isArray(data) && data.length > 0) {
@@ -40,7 +40,7 @@
               <div class="imagenes-match" style="display: flex; gap: 20px; justify-content: center;">
                 <div style="text-align: center;">
                   <p><b>Producto de ${match.nombreUsuario}</b></p>
-                  <img src="http://localhost:3000/uploads/${match.imagen}" alt="Producto del otro" style="max-width: 150px; border-radius: 8px;">
+                  <img src="https://ecointercambio-backend.onrender.com/uploads/${match.imagen}" alt="Producto del otro" style="max-width: 150px; border-radius: 8px;">
                 </div>
               </div>
               <p><b>${match.nombreUsuario}</b> ofrece <b>${match.ofreceEl}</b> y busca <b>${match.buscaEl}</b></p>
@@ -51,14 +51,14 @@
           document.body.appendChild(modal);
         }
       });
-    
-    fetch(`http://localhost:3000/api/match/revisado/${userId}`, { method: 'PUT' });
+
+    fetch(`https://ecointercambio-backend-0ts7.onrender.com/api/match/revisado/${userId}`, { method: 'PUT' });
 
     if (!userId || userId === '0') {
       location.href = 'login.html';
     }
 
-    fetch(`http://localhost:3000/api/mensajes/no-leidos/${userId}`)
+    fetch(`https://ecointercambio-backend-0ts7.onrender.com/api/mensajes/no-leidos/${userId}`)
       .then(res => res.json())
       .then(data => {
         if (Array.isArray(data)) {
@@ -69,13 +69,13 @@
       });
 
     async function cargarPublicaciones() {
-      const res = await fetch(`http://localhost:3000/api/productos/todos/${userId}`);
+      const res = await fetch(`https://ecointercambio-backend-0ts7.onrender.com/api/productos/todos/${userId}`);
       const productos = await res.json();
 
       if (Array.isArray(productos)) {
         document.getElementById('publicaciones').innerHTML = productos.map(p => `
           <div class="producto match-${p.tipo}" onclick="abrirMensaje(${p.usuario_id}, '${encodeURIComponent(p.nombreUsuario)}')">
-            <img src="http://localhost:3000/uploads/${p.imagen}" alt="">
+            <img src="https://ecointercambio-backend-0ts7.onrender.com/uploads/${p.imagen}" alt="">
             <b>Usuario:</b> ${p.nombreUsuario}<br>
             Ofrece: ${p.ofrece}<br>
             Busca: ${p.busca}

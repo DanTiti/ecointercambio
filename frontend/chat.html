@@ -31,7 +31,7 @@
   </div>
 
   <script>
-    const socket = io('http://localhost:3000');
+    const socket = io('https://ecointercambio-backend-0ts7.onrender.com');
     const userId = localStorage.getItem('userId');
     const contactoId = localStorage.getItem('contactoId');
     const contactoNombre = localStorage.getItem('contactoNombre') || 'usuario desconocido';
@@ -41,7 +41,7 @@
 
     const mensajesDiv = document.getElementById('mensajes');
 
-    fetch(`http://localhost:3000/api/mensajes/entre/${userId}/${contactoId}`)
+    fetch(`https://ecointercambio-backend-0ts7.onrender.com/api/mensajes/entre/${userId}/${contactoId}`)
       .then(res => res.json())
       .then(mensajes => {
         mensajesDiv.innerHTML = '';
