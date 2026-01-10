@@ -1,11 +1,12 @@
+// routes/match.js
 const express = require('express');
 const router = express.Router();
-const db = require('../db'); // ← asegúrate que es mysql2/promise
+const db = require('../db');
 const stringSimilarity = require('string-similarity');
 
 function limpiarTexto(texto) {
   return texto.toLowerCase()
-    .normalize('NFD').replace(/[\u0300-\u036f]/g, '') // Quitar tildes
+    .normalize('NFD').replace(/[̀-ͯ]/g, '')
     .trim();
 }
 
@@ -16,11 +17,25 @@ function esSimilarFuzzy(a, b, umbral = 0.7) {
   return score >= umbral;
 }
 
+const CATEGORIAS_SIMILARES = [
+  ['regla', 'escuadra', 'transportador', 'compás'],
+  ['lapiz', 'bolígrafo', 'pluma', 'plumon'],
+  ['colores', 'crayones', 'marcadores', 'borrador'],
+  ['cuaderno', 'libreta', 'hojas'],
+  ['mochila', 'estuche']
+];
+
+function sonDeCategoriaSimilar(a, b) {
+  a = limpiarTexto(a);
+  b = limpiarTexto(b);
+  return CATEGORIAS_SIMILARES.some(grupo => grupo.includes(a) && grupo.includes(b));
+}
+
 router.get('/:userId', async (req, res) => {
   const userId = req.params.userId;
 
   try {
-    const sqlMisProductos = "SELECT * FROM productos WHERE usuario_id = ?";
+    const sqlMisProductos = "SELECT * FROM productos WHERE usuario_id = ? AND estado = 'activo'";
     const [misProductos] = await db.query(sqlMisProductos, [userId]);
 
     if (misProductos.length === 0) {
@@ -30,33 +45,34 @@ router.get('/:userId', async (req, res) => {
     const misCoincidencias = [];
     const clavesUnicas = new Map();
 
-    // Usamos Promise.all para esperar todas las búsquedas en paralelo
     await Promise.all(
       misProductos.map(async producto => {
         const sqlBusqueda = `
           SELECT productos.*, usuarios.nickname 
           FROM productos 
           INNER JOIN usuarios ON productos.usuario_id = usuarios.id 
-          WHERE productos.usuario_id != ?
+          WHERE productos.usuario_id != ? AND productos.estado = 'activo'
         `;
 
         const [resultados] = await db.query(sqlBusqueda, [userId]);
 
         resultados.forEach(r => {
-          const buscaSimilarPerfecto = esSimilarFuzzy(producto.ofrece, r.busca);
-          const ofreceSimilarPerfecto = esSimilarFuzzy(producto.busca, r.ofrece);
+          const buscaPerfecto = esSimilarFuzzy(producto.ofrece, r.busca);
+          const ofrecePerfecto = esSimilarFuzzy(producto.busca, r.ofrece);
 
-          const tipoNuevo = (buscaSimilarPerfecto && ofreceSimilarPerfecto) ? 'perfecto' : 'parcial';
+          const buscaCategoria = sonDeCategoriaSimilar(producto.ofrece, r.busca);
+          const ofreceCategoria = sonDeCategoriaSimilar(producto.busca, r.ofrece);
 
-          if (
-            tipoNuevo === 'parcial' && 
-            !(
-              esSimilarFuzzy(producto.ofrece, r.busca, 0.5) || 
-              esSimilarFuzzy(producto.busca, r.ofrece, 0.5)
-            )
-          ) {
-            return; // No es ni siquiera parcial
+          let tipoNuevo = null;
+          if (buscaPerfecto && ofrecePerfecto) {
+            tipoNuevo = 'perfecto';
+          } else if ((buscaCategoria && ofrecePerfecto) || (buscaPerfecto && ofreceCategoria)) {
+            tipoNuevo = 'categoria';
+          } else if (buscaPerfecto || ofrecePerfecto) {
+            tipoNuevo = 'parcial';
           }
+
+          if (!tipoNuevo) return;
 
           const claveIds = [producto.id, r.id].sort((a, b) => a - b).join('-');
           const clave = `${claveIds}`;
@@ -64,47 +80,48 @@ router.get('/:userId', async (req, res) => {
           if (clavesUnicas.has(clave)) {
             const idx = clavesUnicas.get(clave);
             const existente = misCoincidencias[idx];
-
             if (tipoNuevo === 'perfecto' && existente.tipo !== 'perfecto') {
-              misCoincidencias[idx] = {
-                miProducto: producto.nombre,
-                miImagen: producto.imagen,
-                buscaYo: producto.busca,
-                ofrezcoYo: producto.ofrece,
-                buscaEl: r.busca,
-                ofreceEl: r.ofrece,
-                nombreProductoEl: r.nombre,
-                nombreUsuario: r.nickname,
-                tipo: tipoNuevo,
-                imagen: r.imagen
-              };
+              misCoincidencias[idx] = crearMatch(producto, r, tipoNuevo);
+            } else if (tipoNuevo === 'categoria' && existente.tipo === 'parcial') {
+              misCoincidencias[idx] = crearMatch(producto, r, tipoNuevo);
             }
           } else {
-            misCoincidencias.push({
-              miProducto: producto.nombre,
-              miImagen: producto.imagen,
-              buscaYo: producto.busca,
-              ofrezcoYo: producto.ofrece,
-              buscaEl: r.busca,
-              ofreceEl: r.ofrece,
-              nombreProductoEl: r.nombre,
-              nombreUsuario: r.nickname,
-              usuario: r.usuario_id,
-              tipo: tipoNuevo,
-              imagen: r.imagen
-            });
+            misCoincidencias.push(crearMatch(producto, r, tipoNuevo));
             clavesUnicas.set(clave, misCoincidencias.length - 1);
           }
         });
       })
     );
 
-    const ordenado = misCoincidencias.sort((a, b) => a.tipo === 'perfecto' ? -1 : 1);
+    const ordenado = misCoincidencias.sort((a, b) => {
+      if (a.tipo === b.tipo) return 0;
+      if (a.tipo === 'perfecto') return -1;
+      if (b.tipo === 'perfecto') return 1;
+      if (a.tipo === 'categoria') return -1;
+      return 1;
+    });
+
     res.status(200).json(ordenado);
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: "Error al obtener coincidencias" });
   }
 });
+
+function crearMatch(producto, r, tipo) {
+  return {
+    miProducto: producto.nombre,
+    miImagen: producto.imagen,
+    buscaYo: producto.busca,
+    ofrezcoYo: producto.ofrece,
+    buscaEl: r.busca,
+    ofreceEl: r.ofrece,
+    nombreProductoEl: r.nombre,
+    nombreUsuario: r.nickname,
+    usuario: r.usuario_id,
+    tipo: tipo,
+    imagen: r.imagen
+  };
+}
 
 module.exports = router;
