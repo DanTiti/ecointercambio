@@ -48,9 +48,7 @@
         fetch(`https://ecointercambio-backend-0ts7.onrender.com/api/mensajes/no-leidos/${userId}`)
           .then(res => res.json())
           .then(data => {
-
             const chatsDeOtros = data.filter(item => item.de_usuario != contactoId);
-
             const totalChatsNuevos = chatsDeOtros.length; 
 
             if (totalChatsNuevos > 0) {
@@ -59,7 +57,8 @@
             } else {
               notifSpan.innerText = '';
             }
-          });
+          })
+          .catch(err => console.error("Error en contador:", err));
       }
 
       function marcarMensajesComoLeidos() {
@@ -74,7 +73,7 @@
         .then(() => {
           actualizarContadorGlobal();
         })
-        .catch(err => console.error("Error al limpiar:", err));
+        .catch(err => console.error("Error al marcar leídos:", err));
       }
 
       fetch(`https://ecointercambio-backend-0ts7.onrender.com/api/mensajes/entre/${userId}/${contactoId}`)
@@ -89,7 +88,6 @@
             mensajesDiv.appendChild(div);
           });
           mensajesDiv.scrollTop = mensajesDiv.scrollHeight;
-
           marcarMensajesComoLeidos();
         });
 
@@ -100,7 +98,7 @@
           nuevo.innerHTML = `<b>${contactoNombre}:</b> ${data.mensaje}`;
           mensajesDiv.appendChild(nuevo);
           mensajesDiv.scrollTop = mensajesDiv.scrollHeight;
-          
+
           marcarMensajesComoLeidos();
         } else {
           actualizarContadorGlobal();
@@ -128,7 +126,14 @@
         textoMensaje.value = '';
       });
 
+      textoMensaje.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter' && !e.shiftKey) {
+          e.preventDefault();
+          formChat.requestSubmit();
+        }
+      });
       actualizarContadorGlobal();
+
   </script>
 </body>
 </html>
