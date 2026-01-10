@@ -15,7 +15,6 @@ const storage = new CloudinaryStorage({
 
 const upload = multer({ storage });
 
-
 router.post('/add', upload.single('imagen'), async (req, res) => {
   try {
     console.log('Body:', req.body);
