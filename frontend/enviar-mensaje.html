@@ -24,7 +24,7 @@
     <h2>Escribe a <span id="nombreDestinatario">usuario desconocido</span></h2>
     <form id="formMensaje">
       <textarea id="mensaje" placeholder="Escribe tu mensaje..." required style="width:100%; height:100px;"></textarea>
-      <button type="submit" id="btnEnviar">Enviar</button>
+      <button type="submit">Enviar</button>
     </form>
     <div id="estado"></div>
   </div>
@@ -35,7 +35,7 @@
   const contactoNombre = localStorage.getItem('contactoNombre');
   const mensajeInput = document.getElementById('mensaje');
   const formMensaje = document.getElementById('formMensaje');
-
+  
   if (!userId || !contactoId) {
     alert('Faltan datos del contacto. Redirigiendo...');
     location.href = 'inicio.html';
@@ -43,16 +43,9 @@
 
   document.getElementById('nombreDestinatario').innerText = contactoNombre || 'usuario desconocido';
 
-  mensajeInput.addEventListener('keydown', (e) => {
-    if (e.key === 'Enter' && !e.shiftKey) {
-      e.preventDefault();
-      formMensaje.requestSubmit();
-    }
-  });
-
-  formMensaje.addEventListener('submit', async (e) => {
+  document.getElementById('formMensaje').addEventListener('submit', async (e) => {
     e.preventDefault();
-    const mensaje = mensajeInput.value.trim();
+    const mensaje = document.getElementById('mensaje').value.trim();
     if (!mensaje) return;
 
     try {
@@ -68,6 +61,7 @@
 
       const data = await res.json();
       if (res.ok) {
+        // Aquí rediriges a la página de chat individual
         location.href = 'chat.html';
       } else {
         document.getElementById('estado').innerText = data.message || 'Error al enviar el mensaje.';
