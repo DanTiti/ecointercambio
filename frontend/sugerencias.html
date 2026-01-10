@@ -24,6 +24,8 @@
     <div id="sugerencias"></div>
   </div>
 
+  <script src="js/notificaciones.js"></script>
+
   <script>
     const userId = localStorage.getItem('userId');
     if (!userId || userId === '0') location.href = 'login.html';
@@ -55,8 +57,6 @@
     }
 
     cargarSugerencias();
-
-    src="js/notificaciones.js"
   </script>
 </body>
 </html>

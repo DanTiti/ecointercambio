@@ -24,6 +24,8 @@
     <div id="matches"></div>
   </div>
 
+  <script src="js/notificaciones.js"></script>
+
   <script>
     const userId = localStorage.getItem('userId');
     if (!userId || userId === '0') location.href = 'login.html';
@@ -84,7 +86,6 @@
       location.href = 'enviar-mensaje.html';
     }
     cargarMatches();
-    src="js/notificaciones.js"
   </script>
 </body>
 </html>
