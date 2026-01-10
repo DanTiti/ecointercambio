@@ -40,7 +40,7 @@
               <div class="imagenes-match" style="display: flex; gap: 20px; justify-content: center;">
                 <div style="text-align: center;">
                   <p><b>Producto de ${match.nombreUsuario}</b></p>
-                  <img src="https://ecointercambio-backend-0ts7.onrender.com/uploads/${match.imagen}" alt="Producto del otro" style="max-width: 150px; border-radius: 8px;">
+                  <img src="${match.imagen}" alt="Producto del otro" style="max-width: 150px; border-radius: 8px;">
                 </div>
               </div>
               <p><b>${match.nombreUsuario}</b> ofrece <b>${match.ofreceEl}</b> y busca <b>${match.buscaEl}</b></p>
@@ -75,7 +75,7 @@
       if (Array.isArray(productos)) {
         document.getElementById('publicaciones').innerHTML = productos.map(p => `
           <div class="producto match-${p.tipo}" onclick="abrirMensaje(${p.usuario_id}, '${encodeURIComponent(p.nombreUsuario)}')">
-            <img src="https://ecointercambio-backend-0ts7.onrender.com/uploads/${p.imagen}" alt="">
+            <img src="${p.imagen}" alt="">
             <b>Usuario:</b> ${p.nombreUsuario}<br>
             Ofrece: ${p.ofrece}<br>
             Busca: ${p.busca}

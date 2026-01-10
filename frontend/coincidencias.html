@@ -52,7 +52,7 @@
           }
           return `
             <div class="producto match-${m.tipo}" onclick="abrirMensaje(${m.usuario}, '${encodeURIComponent(m.nombreUsuario)}')">
-              <img src="https://ecointercambio-backend-0ts7.onrender.com/uploads/${m.imagen}" alt="">
+              <img src="${m.imagen}" alt="">
               <strong>Match ${m.tipo.toUpperCase()}</strong><br>
               <span class="explicacion-match" title="${explicacion}">ℹ️</span><br>
               Tú buscas: <b>${m.buscaYo}</b> | ofreces: <b>${m.ofrezcoYo}</b><br>
