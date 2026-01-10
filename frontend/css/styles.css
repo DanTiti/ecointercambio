@@ -1,0 +1,359 @@
+/* Reset básico */
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+/* Fondo general */
+body {
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  background: #f4f7fc;
+  color: #333;
+  min-height: 100vh;
+}
+
+/* Contenedor más amplio */
+.container {
+  max-width: 1200px;
+  margin: auto;
+  padding: 40px 20px;
+}
+
+.wrapper {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: calc(100vh - 60px); /* Ajusta este valor */
+  padding: 20px;
+  box-sizing: border-box;
+  width: 100%;
+}
+
+.container-inigistro {
+  background: white;
+  padding: 40px;
+  border-radius: 12px;
+  box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
+  width: 100%;
+  max-width: 400px;
+  text-align: center;
+}
+
+/* Títulos */
+h2, h3 {
+  color: #1e88e5;
+  margin-bottom: 15px;
+}
+
+/* Botones */
+button {
+  padding: 10px 20px;
+  background-color: #1e88e5;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  margin-left: 8px;
+}
+
+button:hover {
+  background-color: #1565c0;
+}
+
+/* Formularios */
+form input, form button {
+  width: 100%;
+  padding: 12px;
+  margin: 8px 0;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  font-size: 14px;
+}
+
+/* Grid de productos */
+#otros, #matches, #publicaciones, #misPublicaciones, #intercambiados, #sugerencias {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 20px;
+  margin-top: 20px;
+}
+
+.producto {
+  position: relative;
+  background: #fff;
+  border-radius: 8px;
+  box-shadow: 0 0 8px rgba(0, 0, 0, 0.05);
+  padding: 12px;
+  text-align: center;
+  transition: transform 0.2s ease;
+}
+
+.producto:hover {
+  transform: translateY(-3px);
+}
+
+.producto img {
+  width: 100%;
+  height: 160px;
+  object-fit: cover;
+  border-radius: 6px;
+  margin-bottom: 10px;
+}
+
+.link {
+  text-align: center;
+  margin-top: 10px;
+}
+
+.link a {
+  text-decoration: none;
+  color: #1e88e5;
+}
+
+/* Barra de navegación */
+.navbar {
+  height: 60px;
+  width: 100%;
+  background: #1e88e5;
+  padding: 15px 20px;
+  color: white;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.navbar h1 {
+  font-size: 20px;
+}
+
+.navbar .nav-links button {
+  background: white;
+  color: #1e88e5;
+  margin-left: 10px;
+  font-weight: bold;
+}
+
+.match-perfecto {
+  border-left: 6px solid #4caf50; /* verde */
+}
+
+.match-categoria {
+  border-left: 6px solid #2196f3; /* azul */
+}
+
+.match-parcial {
+  border-left: 6px solid #ffc107; /* amarillo */
+}
+
+.explicacion-match {
+  cursor: help;
+  font-size: 14px;
+  margin-bottom: 5px;
+  display: inline-block;
+  color: #666;
+}
+
+.producto-eliminar {
+  position: absolute;
+  top: 5px;
+  right: 5px;
+}
+
+.eliminar {
+  background: rgba(255, 255, 255, 0.8);
+  border: none;
+  border-radius: 50%;
+  padding: 5px;
+  cursor: pointer;
+  font-size: 16px;
+  transition: background 0.2s ease;
+}
+
+.eliminar:hover {
+  background: #ffcccc;
+}
+
+/* Contenedor general de la lista de chats */
+#listaChats {
+  max-width: 700px;
+  margin: 40px auto;
+  padding: 0 20px;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+/* Cada chat como una "tarjeta" */
+#listaChats .chat-item {
+  display: flex;
+  flex-direction: column;
+  background-color: #ffffff;
+  border: 1px solid #dee2e6;
+  border-radius: 10px;
+  margin-bottom: 15px;
+  padding: 15px 20px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.06);
+  transition: background-color 0.25s ease;
+  cursor: pointer;
+}
+
+#listaChats .chat-item:hover {
+  background-color: #f1fdf5;
+}
+
+/* Nombre del contacto */
+.chat-item .nickname {
+  font-size: 18px;
+  font-weight: 600;
+  color: #1e88e5; /* verde Bootstrap */
+  margin-bottom: 5px;
+}
+
+/* Último mensaje */
+.chat-item .lastMessage {
+  font-size: 14px;
+  color: #495057;
+  font-style: italic;
+}
+
+/* Estilo del mensaje cuando no hay chats */
+#listaChats p {
+  text-align: center;
+  color: #888;
+  font-style: italic;
+  margin-top: 30px;
+}
+
+.chat-container {
+  max-width: 800px;
+  margin: 30px auto;
+  background-color: white;
+  padding: 20px;
+  border-radius: 10px;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+}
+
+.chat-container h2 {
+  margin-bottom: 20px;
+}
+
+.mensajes {
+  height: 300px;
+  overflow-y: auto;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  padding: 10px;
+  margin-bottom: 15px;
+  background-color: #fdfdfd;
+}
+
+.mensaje {
+  padding: 8px;
+  margin-bottom: 10px;
+  border-radius: 8px;
+  max-width: 70%;
+  clear: both;
+}
+
+.mensaje.propio {
+  background-color: #dcf8c6;
+  margin-left: auto;
+  text-align: right;
+}
+
+.mensaje.ajeno {
+  background-color: #ffffff;
+  border: 1px solid #ddd;
+}
+
+.form-chat {
+  display: flex;
+  flex-direction: column;
+}
+
+.form-chat textarea {
+  resize: none;
+  padding: 10px;
+  font-size: 14px;
+  border-radius: 6px;
+  border: 1px solid #ccc;
+  margin-bottom: 10px;
+}
+
+.form-chat button {
+  align-self: flex-end;
+  background-color: #006699;
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.form-chat button:hover {
+  background-color: #004466;
+}
+
+.modal-match {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.5); /* fondo semi-transparente */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+}
+
+.modal-content {
+  background-color: #fff;
+  border-radius: 12px;
+  padding: 20px 30px;
+  width: 90%;
+  max-width: 400px;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
+  text-align: center;
+  animation: aparecer 0.3s ease-out;
+}
+
+.modal-content h3 {
+  margin-top: 0;
+  color: #2c3e50;
+}
+
+.modal-content p {
+  margin: 15px 0;
+  font-size: 16px;
+}
+
+.modal-content button {
+  margin: 10px 5px 0;
+  padding: 10px 20px;
+  border: none;
+  border-radius: 8px;
+  background-color: #27ae60;
+  color: white;
+  cursor: pointer;
+  font-weight: bold;
+  transition: background-color 0.2s ease-in-out;
+}
+
+.modal-content button:hover {
+  background-color: #1e8449;
+}
+
+@keyframes aparecer {
+  from {
+    transform: scale(0.9);
+    opacity: 0;
+  }
+  to {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+
+
+
