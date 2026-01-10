@@ -41,7 +41,6 @@ router.get('/nuevas/:userId', async (req, res) => {
   }
 });
 
-// Actualizar la fecha de revisión a NOW()
 router.put('/revisado/:userId', async (req, res) => {
   const userId = req.params.userId;
 
