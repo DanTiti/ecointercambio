@@ -17,7 +17,6 @@ app.use(cors({
   credentials: true
 }));
 
-
 // Middleware
 app.use(bodyParser.json());
 const uploadsPath = path.join(__dirname, '..', 'uploads');
