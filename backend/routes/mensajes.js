@@ -2,7 +2,6 @@ const express = require('express');
 const router = express.Router();
 const db = require('../db');
 
-// Enviar mensaje
 router.post('/enviar', async (req, res) => {
   const { de_usuario, para_usuario, mensaje } = req.body;
   const sql = "INSERT INTO mensajes (de_usuario, para_usuario, mensaje) VALUES (?, ?, ?)";
@@ -15,7 +14,6 @@ router.post('/enviar', async (req, res) => {
   }
 });
 
-// Ver mensajes entre dos usuarios
 router.get('/entre/:a/:b', async (req, res) => {
   const { a, b } = req.params;
   const sql = `
@@ -42,7 +40,6 @@ router.get('/entre/:a/:b', async (req, res) => {
   }
 });
 
-// Marcar mensajes como leídos
 router.post('/marcar-leidos', async (req, res) => {
   const { de_usuario, para_usuario } = req.body;
   const sql = `UPDATE mensajes SET leido = 1 WHERE de_usuario = ? AND para_usuario = ?`;
@@ -55,7 +52,6 @@ router.post('/marcar-leidos', async (req, res) => {
   }
 });
 
-// Contar mensajes no leídos
 router.get('/no-leidos/:usuarioId', async (req, res) => {
   const usuarioId = req.params.usuarioId;
   const sql = `
@@ -73,7 +69,6 @@ router.get('/no-leidos/:usuarioId', async (req, res) => {
   }
 });
 
-// Obtener lista de chats
 router.get('/chats/:id', async (req, res) => {
   const userId = req.params.id;
   const sql = `

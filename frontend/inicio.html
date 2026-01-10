@@ -31,7 +31,7 @@
       .then(res => res.json())
       .then(data => {
         if (Array.isArray(data) && data.length > 0) {
-          const match = data[0]; // solo mostramos la más reciente
+          const match = data[0];
           const modal = document.createElement('div');
           modal.className = 'modal-match';
           modal.innerHTML = `

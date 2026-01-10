@@ -4,15 +4,12 @@ const db = require('../db');
 const multer = require('multer');
 const path = require('path');
 
-
-// Configurar almacenamiento de imágenes
 const storage = multer.diskStorage({
   destination: (req, file, cb) => cb(null, 'uploads/'),
   filename: (req, file, cb) => cb(null, Date.now() + path.extname(file.originalname))
 });
 const upload = multer({ storage: storage });
 
-// POST /add - agregar producto con imagen
 router.post('/add', upload.single('imagen'), async (req, res) => {
   try {
     console.log('Body:', req.body);
@@ -31,7 +28,6 @@ router.post('/add', upload.single('imagen'), async (req, res) => {
   }
 });
 
-// GET /todos/:id - obtener productos de otros usuarios
 router.get('/todos/:id', async (req, res) => {
   const userId = req.params.id;
   const sql = `

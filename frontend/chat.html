@@ -40,14 +40,13 @@
     document.getElementById('nombreReceptor').innerText = contactoNombre;
 
     const mensajesDiv = document.getElementById('mensajes');
-    const textoMensaje = document.getElementById('textoMensaje'); // Definimos la variable del textarea
-    const formChat = document.getElementById('formChat'); // Definimos la variable del formulario
+    const textoMensaje = document.getElementById('textoMensaje');
+    const formChat = document.getElementById('formChat');
 
-    // --- FUNCIÓN: ENVIAR CON ENTER ---
     textoMensaje.addEventListener('keydown', (e) => {
       if (e.key === 'Enter' && !e.shiftKey) {
         e.preventDefault();
-        formChat.requestSubmit(); // Esto dispara el evento 'submit' de abajo
+        formChat.requestSubmit();
       }
     });
 
@@ -94,7 +93,7 @@
       mensajesDiv.appendChild(div);
       mensajesDiv.scrollTop = mensajesDiv.scrollHeight;
 
-      textoMensaje.value = ''; // Limpia el cuadro de texto
+      textoMensaje.value = '';
     });
   </script>
 </body>

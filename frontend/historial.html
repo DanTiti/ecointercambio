@@ -54,7 +54,6 @@
             });
         }
 
-        // Notificación de mensajes no leídos
         fetch(`https://ecointercambio-backend.onrender.com/api/mensajes/no-leidos/${userId}`)
         .then(res => res.json())
         .then(data => {
@@ -66,7 +65,7 @@
         });
 
     async function eliminarProducto(id) {
-        const userId = localStorage.getItem('userId'); // O tu forma de obtenerlo
+        const userId = localStorage.getItem('userId');
         if (!confirm("¿Seguro que deseas eliminar este producto?")) return;
 
         try {

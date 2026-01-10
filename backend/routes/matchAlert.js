@@ -1,13 +1,11 @@
 const express = require('express');
 const router = express.Router();
-const db = require('../db'); // Asegúrate de tener tu conexión a la BD aquí
+const db = require('../db');
 
-// Obtener coincidencias nuevas desde la última revisión
 router.get('/nuevas/:userId', async (req, res) => {
   const userId = req.params.userId;
 
   try {
-    // Primero obtenemos la última fecha de revisión
     const [revision] = await db.query(
       'SELECT ultima_revision_match FROM usuarios WHERE id = ?',
       [userId]
@@ -15,7 +13,6 @@ router.get('/nuevas/:userId', async (req, res) => {
 
     const ultimaRevision = revision[0]?.ultima_revision_match || '2000-01-01';
 
-    // Aquí va tu lógica para obtener matches perfectos desde esa fecha
     const [matches] = await db.query(
       `
         SELECT p1.usuario_id AS usuario,

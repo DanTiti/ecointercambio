@@ -61,7 +61,6 @@
 
       const data = await res.json();
       if (res.ok) {
-        // Aquí rediriges a la página de chat individual
         location.href = 'chat.html';
       } else {
         document.getElementById('estado').innerText = data.message || 'Error al enviar el mensaje.';

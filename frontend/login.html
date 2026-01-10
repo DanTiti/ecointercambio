@@ -38,7 +38,7 @@
       });
 
       const data = await res.json();
-      console.log(data); // <-- Esto para ver qué recibes realmente
+      console.log(data);
       if (res.ok) {
         localStorage.setItem("userId", data.userId);
         localStorage.setItem("nickname", data.nickname);

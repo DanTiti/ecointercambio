@@ -1,9 +1,8 @@
 const express = require('express');
 const router = express.Router();
-const db = require('../db'); // ← debe ser con promesas
+const db = require('../db');
 const bcrypt = require('bcrypt');
 
-// Registro de usuario
 router.post('/register', async (req, res) => {
   const { nickname, email, password } = req.body;
 
@@ -24,7 +23,6 @@ router.post('/register', async (req, res) => {
   }
 });
 
-// Login de usuario
 router.post('/login', async (req, res) => {
   const { email, password } = req.body;
 

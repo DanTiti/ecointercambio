@@ -57,7 +57,7 @@
       });
 
   async function eliminarProducto(id) {
-    const userId = localStorage.getItem('userId'); // O tu forma de obtenerlo
+    const userId = localStorage.getItem('userId');
     if (!confirm("¿Seguro que deseas eliminar este producto?")) return;
 
     try {
@@ -91,7 +91,6 @@
       .then(res => res.json())
       .then(data => {
         alert(data.message);
-        // Elimina el producto del DOM directamente sin recargar
         const elemento = document.getElementById(`producto-${id}`);
         if (elemento) {
           elemento.remove();
