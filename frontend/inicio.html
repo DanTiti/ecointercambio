@@ -27,7 +27,7 @@
 
   <script>
     const userId = localStorage.getItem('userId');
-    fetch(`https://ecointercambio-backend.onrender.com/api/match/nuevas/${userId}`)
+    fetch(`https://ecointercambio-backend-0ts7.onrender.com/api/match/nuevas/${userId}`)
       .then(res => res.json())
       .then(data => {
         if (Array.isArray(data) && data.length > 0) {
@@ -40,7 +40,7 @@
               <div class="imagenes-match" style="display: flex; gap: 20px; justify-content: center;">
                 <div style="text-align: center;">
                   <p><b>Producto de ${match.nombreUsuario}</b></p>
-                  <img src="https://ecointercambio-backend.onrender.com/uploads/${match.imagen}" alt="Producto del otro" style="max-width: 150px; border-radius: 8px;">
+                  <img src="https://ecointercambio-backend-0ts7.onrender.com/uploads/${match.imagen}" alt="Producto del otro" style="max-width: 150px; border-radius: 8px;">
                 </div>
               </div>
               <p><b>${match.nombreUsuario}</b> ofrece <b>${match.ofreceEl}</b> y busca <b>${match.buscaEl}</b></p>

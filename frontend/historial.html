@@ -29,7 +29,7 @@
         if (!userId || userId === '0') location.href = 'login.html';
 
         function cargarHistorial() {
-        fetch(`https://ecointercambio-backend.onrender.com/api/productos/intercambiados/${userId}`)
+        fetch(`https://ecointercambio-backend-0ts7.onrender.com/api/productos/intercambiados/${userId}`)
             .then(res => res.json())
             .then(productos => {
             const contenedor = document.getElementById('intercambiados');
@@ -44,7 +44,7 @@
                     <div class="producto-eliminar">
                         <button class="eliminar" onclick="eliminarProducto(${p.id})">🗑️</button>
                     </div>
-                    <img src="http://localhost:3000/uploads/${p.imagen}" alt="">
+                    <img src="https://ecointercambio-backend-0ts7.onrender.com/uploads/${p.imagen}" alt="">
                     <b>${p.nombreUsuario}</b><br>
                     Ofreciste: ${p.ofrece}<br>
                     Buscaste: ${p.busca}<br>
