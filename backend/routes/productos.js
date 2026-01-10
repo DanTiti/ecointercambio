@@ -2,13 +2,18 @@ const express = require('express');
 const router = express.Router();
 const db = require('../db');
 const multer = require('multer');
-const path = require('path');
+const { CloudinaryStorage } = require('multer-storage-cloudinary');
+const cloudinary = require('../cloudinary');
 
-const storage = multer.diskStorage({
-  destination: (req, file, cb) => cb(null, 'uploads/'),
-  filename: (req, file, cb) => cb(null, Date.now() + path.extname(file.originalname))
+const storage = new CloudinaryStorage({
+  cloudinary,
+  params: {
+    folder: 'ecointercambio',
+    allowed_formats: ['jpg', 'png', 'jpeg', 'webp']
+  }
 });
-const upload = multer({ storage: storage });
+
+const upload = multer({ storage });
 
 router.post('/add', upload.single('imagen'), async (req, res) => {
   try {
@@ -16,7 +21,7 @@ router.post('/add', upload.single('imagen'), async (req, res) => {
     console.log('Archivo:', req.file);
 
     const { busca, ofrece, usuario_id } = req.body;
-    const imagen = req.file ? req.file.filename : null;
+    const imagen = req.file ? req.file.path : null;
 
     const sql = `INSERT INTO productos (busca, ofrece, imagen, usuario_id) VALUES (?, ?, ?, ?)`;
     await db.query(sql, [busca, ofrece, imagen, usuario_id]);

@@ -42,7 +42,7 @@ router.get('/entre/:a/:b', async (req, res) => {
 
 router.post('/marcar-leidos', async (req, res) => {
   const { de_usuario, para_usuario } = req.body;
-  const sql = `UPDATE mensajes SET leido = 1 WHERE de_usuario = ? AND para_usuario = ?`;
+  const sql = `UPDATE mensajes SET leido = 1 WHERE de_usuario = ? AND para_usuario = ? AND leido = 0`;
   try {
     await db.query(sql, [de_usuario, para_usuario]);
     res.status(200).json({ message: 'Mensajes marcados como leídos' });
@@ -92,9 +92,7 @@ router.get('/chats/:id', async (req, res) => {
 
   try {
     const [results] = await db.query(sql, [userId, userId, userId, userId]);
-
     const chatsMap = new Map();
-
     for (const row of results) {
       if (!chatsMap.has(row.otro_usuario_id)) {
         chatsMap.set(row.otro_usuario_id, {
@@ -105,7 +103,6 @@ router.get('/chats/:id', async (req, res) => {
         });
       }
     }
-
     const chats = Array.from(chatsMap.values());
     res.json(chats);
   } catch (err) {

@@ -3,37 +3,18 @@ const cors = require('cors');
 const bodyParser = require('body-parser');
 const http = require('http');
 const { Server } = require('socket.io');
-const path = require('path');
-const multer = require('multer');
-const db = require('./db');  // conexión a base de datos
+const db = require('./db');
 const matchAlertRoutes = require('./routes/matchAlert');
 
-// Crear instancia de Express primero
 const app = express();
 
-// CORS configurado para múltiples orígenes
 app.use(cors({
   origin: true,
   credentials: true
 }));
 
-// Middleware
 app.use(bodyParser.json());
-const uploadsPath = path.join(__dirname, '..', 'uploads');
-app.use('/uploads', express.static(uploadsPath));
 
-// Multer para subir imágenes
-const storage = multer.diskStorage({
-  destination: (req, file, cb) => {
-    cb(null, path.join(__dirname, '..', 'uploads')); // Guardar fuera de /backend
-  },
-  filename: (req, file, cb) => {
-    cb(null, Date.now() + '-' + file.originalname);
-  }
-});
-const upload = multer({ storage });
-
-// Rutas
 app.use('/api/auth', require('./routes/auth'));
 app.use('/api/productos', require('./routes/productos'));
 app.use('/api/match', require('./routes/match'));
@@ -41,8 +22,8 @@ app.use('/api/mensajes', require('./routes/mensajes'));
 app.use('/api/sugerencias', require('./routes/sugerencias'));
 app.use('/api/match', matchAlertRoutes);
 
-// Crear servidor HTTP y conectar Socket.IO
 const server = http.createServer(app);
+
 const io = new Server(server, {
   cors: {
     origin: true,
@@ -51,7 +32,6 @@ const io = new Server(server, {
   }
 });
 
-
 io.on('connection', (socket) => {
   console.log('Cliente conectado:', socket.id);
 
@@ -59,7 +39,10 @@ io.on('connection', (socket) => {
     const { de_usuario, para_usuario, mensaje } = data;
 
     try {
-      const sql = "INSERT INTO mensajes (de_usuario, para_usuario, mensaje) VALUES (?, ?, ?)";
+      const sql = `
+        INSERT INTO mensajes (de_usuario, para_usuario, mensaje)
+        VALUES (?, ?, ?)
+      `;
       await db.query(sql, [de_usuario, para_usuario, mensaje]);
 
       io.emit(`mensaje-${de_usuario}`, {
@@ -73,6 +56,7 @@ io.on('connection', (socket) => {
         mensaje,
         creado_en: new Date().toISOString()
       });
+
     } catch (err) {
       console.error('Error al guardar mensaje:', err);
     }
@@ -86,6 +70,5 @@ io.on('connection', (socket) => {
 const PORT = process.env.PORT || 3000;
 
 server.listen(PORT, () => {
-  console.log('Servidor en puerto', PORT);
+  console.log('Servidor corriendo en puerto', PORT);
 });
-
