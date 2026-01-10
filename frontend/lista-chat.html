@@ -27,16 +27,6 @@
         const userId = localStorage.getItem('userId');
         const notifSpan = document.getElementById('notif');
 
-        function actualizarContadorGlobal() {
-            fetch(`https://ecointercambio-backend-0ts7.onrender.com/api/mensajes/no-leidos/${userId}`)
-                .then(res => res.json())
-                .then(data => {
-                    const totalPersonas = data.length; 
-                    notifSpan.innerText = totalPersonas > 0 ? ` (${totalPersonas})` : '';
-                    if (totalPersonas > 0) notifSpan.style.color = "red";
-                });
-        }
-
         fetch(`https://ecointercambio-backend-0ts7.onrender.com/api/mensajes/chats/${userId}`)
             .then(res => res.json())
             .then(chats => {

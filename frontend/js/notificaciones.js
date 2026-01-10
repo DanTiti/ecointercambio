@@ -13,7 +13,7 @@ function actualizarContadorNavbar() {
 
             if (totalChatsNuevos > 0) {
                 notifSpan.innerText = ` (${totalChatsNuevos})`;
-                notifSpan.style.color = "red";
+                notifSpan.style.color = "#1e88e5";
             } else {
                 notifSpan.innerText = '';
             }
