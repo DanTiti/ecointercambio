@@ -2,64 +2,58 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>ReUtiles - Inicio</title>
   <link rel="stylesheet" href="css/styles.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 </head>
 <body>
+
   <div class="navbar">
-    <h1>ReÚtiles</h1>
-    <div class="nav-links">
-      <button onclick="location.href='dashboard.html'">Publicar</button>
-      <button onclick="location.href='coincidencias.html'">Coincidencias</button>
-      <button onclick="location.href='sugerencias.html'">Sugerencias</button>
-      <button onclick="location.href='mis-publicaciones.html'">Mis publicaciones</button>
-      <button onclick="location.href='historial.html'">Historial</button>
-      <button onclick="location.href='lista-chat.html'">Chats<span id="notif"></span></button>
-      <button onclick="localStorage.clear(); location.href='login.html'">Salir</button>
+    <div class="nav-container">
+      <div class="logo-container" onclick="location.href='inicio.html'" style="cursor: pointer; display: flex; align-items: center; gap: 10px;">
+        <i class="fas fa-home" style="font-size: 1.5rem;"></i>
+        <h1 style="margin: 0;">ReÚtiles</h1>
+      </div>
+      <div class="nav-main-actions">
+        <button class="btn-visible" onclick="location.href='dashboard.html'"><i class="fas fa-plus"></i> Publicar</button>
+        <button class="btn-visible" onclick="location.href='coincidencias.html'"><i class="fas fa-handshake"></i> Coincidencias</button>
+        
+        <div class="dropdown">
+          <button class="dropbtn" id="menuBtn"><i class="fas fa-bars"></i></button>
+            <div class="dropdown-content" id="myDropdown">
+                <a href="sugerencias.html"><i class="fas fa-lightbulb"></i> Sugerencias</a>
+                <a href="mis-publicaciones.html"><i class="fas fa-folder-open"></i> Mis publicaciones</a>
+                <a href="historial.html"><i class="fas fa-history"></i> Historial</a>
+                <a href="lista-chat.html"><i class="fas fa-comments"></i> Chats <span id="notif"></span></a>
+                <hr>
+                <a href="#" onclick="localStorage.clear(); location.href='login.html'" style="color: #d32f2f;">
+                    <i class="fas fa-sign-out-alt"></i> Salir
+                </a>
+            </div>
+        </div>
+      </div>
     </div>
   </div>
 
-  <div class="container">
-    <h2>Bienvenido a ReÚtiles</h2>
-    <h3>Publicaciones disponibles</h3>
-    <div id="publicaciones"></div>
+  <div class="content-wrapper">
+    <div class="container">
+      <h2>Bienvenido a ReÚtiles</h2>
+      <h3>Publicaciones disponibles</h3>
+      <div id="publicaciones"></div>
+    </div>
   </div>
 
-  <script src="js/notificaciones.js"></script>
+  <footer class="main-footer">
+    <p>&copy; <span id="year"></span> ReÚtiles - Proyecto Escolar</p>
+  </footer>
 
+  <script src="js/notificaciones.js"></script>
+  <script src="js/menu.js"></script>
   <script>
     const userId = localStorage.getItem('userId');
-
-    if (!userId || userId === '0') {
-      location.href = 'login.html';
-    }
-
-    fetch(`https://ecointercambio-backend-0ts7.onrender.com/api/match/nuevas/${userId}`)
-      .then(res => res.json())
-      .then(data => {
-        if (Array.isArray(data) && data.length > 0) {
-          const match = data[0];
-          const modal = document.createElement('div');
-          modal.className = 'modal-match';
-          modal.innerHTML = `
-            <div class="modal-content">
-              <h3>🎉 ¡Nuevo Match ${match.tipo === 'perfecto' ? 'Perfecto' : 'Parcial'}!</h3>
-              <div class="imagenes-match" style="display: flex; gap: 20px; justify-content: center;">
-                <div style="text-align: center;">
-                  <p><b>Producto de ${match.nombreUsuario}</b></p>
-                  <img src="${match.imagen}" alt="Producto del otro" style="max-width: 150px; border-radius: 8px;">
-                </div>
-              </div>
-              <p><b>${match.nombreUsuario}</b> ofrece <b>${match.ofreceEl}</b> y busca <b>${match.buscaEl}</b></p>
-              <button onclick="abrirMensaje(${match.usuario}, '${encodeURIComponent(match.nombreUsuario)}')">Enviar mensaje</button>
-              <button onclick="this.closest('.modal-match').remove()">Cerrar</button>
-            </div>
-          `;
-          document.body.appendChild(modal);
-        }
-      });
-
-    fetch(`https://ecointercambio-backend-0ts7.onrender.com/api/match/revisado/${userId}`, { method: 'PUT' });
+    if (!userId || userId === '0') location.href = 'login.html';
+    document.getElementById("year").textContent = new Date().getFullYear();
 
     async function cargarPublicaciones() {
       const res = await fetch(`https://ecointercambio-backend-0ts7.onrender.com/api/productos/todos/${userId}`);
@@ -68,21 +62,20 @@
         document.getElementById('publicaciones').innerHTML = productos.map(p => `
           <div class="producto match-${p.tipo}" onclick="abrirMensaje(${p.usuario_id}, '${encodeURIComponent(p.nombreUsuario)}')">
             <img src="${p.imagen}" alt="">
-            <b>Usuario:</b> ${p.nombreUsuario}<br>
-            Ofrece: ${p.ofrece}<br>
-            Busca: ${p.busca}
+            <div class="info">
+              <b><i class="fas fa-user"></i> ${p.nombreUsuario}</b><br>
+              Ofrece: ${p.ofrece}<br>
+              Busca: ${p.busca}
+            </div>
           </div>
         `).join('');
       }
     }
-
     function abrirMensaje(usuarioId, nombreUsuario) {
-      const decoded = decodeURIComponent(nombreUsuario);
       localStorage.setItem('contactoId', usuarioId);
-      localStorage.setItem('contactoNombre', decoded);
+      localStorage.setItem('contactoNombre', decodeURIComponent(nombreUsuario));
       location.href = 'enviar-mensaje.html';
     }
-
     cargarPublicaciones();
   </script>
 </body>

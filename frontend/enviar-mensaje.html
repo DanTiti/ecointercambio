@@ -3,50 +3,90 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Enviar mensaje</title>
+  <title>Enviar mensaje - ReÚtiles</title>
   <link rel="stylesheet" href="css/styles.css" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 </head>
 <body>
   <div class="navbar">
-    <h1>ReUtiles</h1>
-    <div class="nav-links">
-      <button onclick="location.href='inicio.html'">Inicio</button>
-      <button onclick="location.href='dashboard.html'">Publicar</button>
-      <button onclick="location.href='coincidencias.html'">Coincidencias</button>
-      <button onclick="location.href='sugerencias.html'">Sugerencias</button>
-      <button onclick="location.href='mis-publicaciones.html'">Mis publicaciones</button>
-      <button onclick="location.href='historial.html'">Historial</button>
-      <button onclick="localStorage.clear(); location.href='login.html'">Salir</button>
+    <div class="nav-container">
+      <div class="logo-container" onclick="location.href='inicio.html'" style="cursor: pointer; display: flex; align-items: center; gap: 10px;">
+        <i class="fas fa-home" style="font-size: 1.5rem;"></i>
+        <h1 style="margin: 0;">ReÚtiles</h1>
+      </div>
+      <div class="nav-main-actions">
+        <button class="btn-visible" onclick="location.href='dashboard.html'"><i class="fas fa-plus"></i> Publicar</button>
+        <button class="btn-visible" onclick="location.href='coincidencias.html'"><i class="fas fa-handshake"></i> Coincidencias</button>
+        
+        <div class="dropdown">
+          <button class="dropbtn" id="menuBtn"><i class="fas fa-bars"></i></button>
+            <div class="dropdown-content" id="myDropdown">
+                <a href="sugerencias.html"><i class="fas fa-lightbulb"></i> Sugerencias</a>
+                <a href="mis-publicaciones.html"><i class="fas fa-folder-open"></i> Mis publicaciones</a>
+                <a href="historial.html"><i class="fas fa-history"></i> Historial</a>
+                <a href="lista-chat.html"><i class="fas fa-comments"></i> Chats <span id="notif"></span></a>
+                <hr>
+                <a href="#" onclick="localStorage.clear(); location.href='login.html'" style="color: #d32f2f;">
+                    <i class="fas fa-sign-out-alt"></i> Salir
+                </a>
+            </div>
+        </div>
+      </div>
     </div>
   </div>
 
-  <div class="container">
-    <h2>Escribe a <span id="nombreDestinatario">usuario desconocido</span></h2>
-    <form id="formMensaje">
-      <textarea id="mensaje" placeholder="Escribe tu mensaje..." required style="width:100%; height:100px;"></textarea>
-      <button type="submit">Enviar</button>
-    </form>
-    <div id="estado"></div>
+  <div class="content-wrapper">
+    <div class="container">
+      <div class="chat-container" style="max-width: 600px; margin: 40px auto; padding: 30px;">
+        <div class="chat-header" style="border-bottom: 1px solid #eee; padding-bottom: 15px; margin-bottom: 20px; display: flex; align-items: center; gap: 15px;">
+            <button onclick="history.back()" style="background: none; color: #1e88e5; font-size: 1.2rem; border: none; cursor: pointer;">
+                <i class="fas fa-arrow-left"></i>
+            </button>
+            <h2 style="margin: 0;">Escribe a <span id="nombreDestinatario" style="color: #1e88e5;">...</span></h2>
+        </div>
+
+        <form id="formMensaje" class="form-chat" style="display: flex; flex-direction: column; gap: 15px;">
+            <p style="color: #666; font-size: 0.95rem;">Escribe tu propuesta o duda sobre este intercambio:</p>
+            <textarea id="mensaje" placeholder="Hola, me gustaría intercambiar mi..." required 
+                style="width:100%; height:150px; padding: 15px; border-radius: 12px; border: 1px solid #ddd; resize: none; font-family: inherit;"></textarea>
+            
+            <button type="submit" class="btn-send" style="width: 100%; padding: 15px; font-weight: bold; font-size: 1.1rem; display: flex; align-items: center; justify-content: center; gap: 10px;">
+                <i class="fas fa-paper-plane"></i> Enviar Mensaje
+            </button>
+        </form>
+        <div id="estado" style="text-align: center; margin-top: 15px; color: #d32f2f; font-weight: bold;"></div>
+      </div>
+    </div>
   </div>
+
+  <footer class="main-footer">
+    <p>&copy; <span id="year"></span> ReÚtiles - Proyecto Escolar</p>
+  </footer>
+
+  <script src="js/menu.js"></script>
 
 <script>
   const userId = localStorage.getItem('userId');
   const contactoId = localStorage.getItem('contactoId');
   const contactoNombre = localStorage.getItem('contactoNombre');
-  const mensajeInput = document.getElementById('mensaje');
-  const formMensaje = document.getElementById('formMensaje');
+  const notifSpan = document.getElementById('notif');
+  document.getElementById("year").textContent = new Date().getFullYear();
   
   if (!userId || !contactoId) {
     alert('Faltan datos del contacto. Redirigiendo...');
     location.href = 'inicio.html';
   }
 
-  document.getElementById('nombreDestinatario').innerText = contactoNombre || 'usuario desconocido';
+  document.getElementById('nombreDestinatario').innerText = contactoNombre || 'usuario';
 
   document.getElementById('formMensaje').addEventListener('submit', async (e) => {
     e.preventDefault();
+    const btn = e.target.querySelector('button');
     const mensaje = document.getElementById('mensaje').value.trim();
     if (!mensaje) return;
+
+    btn.disabled = true;
+    btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Enviando...';
 
     try {
       const res = await fetch('https://ecointercambio-backend-0ts7.onrender.com/api/mensajes/enviar', {
@@ -59,17 +99,33 @@
         })
       });
 
-      const data = await res.json();
       if (res.ok) {
         location.href = 'chat.html';
       } else {
-        document.getElementById('estado').innerText = data.message || 'Error al enviar el mensaje.';
+        const data = await res.json();
+        document.getElementById('estado').innerText = data.message || 'Error al enviar.';
+        btn.disabled = false;
+        btn.innerHTML = '<i class="fas fa-paper-plane"></i> Enviar Mensaje';
       }
     } catch (err) {
-      console.error('Error al enviar el mensaje:', err);
-      document.getElementById('estado').innerText = 'Error al enviar el mensaje. Inténtalo más tarde.';
+      console.error(err);
+      document.getElementById('estado').innerText = 'Error de conexión.';
+      btn.disabled = false;
+      btn.innerHTML = '<i class="fas fa-paper-plane"></i> Enviar Mensaje';
     }
   });
+
+  function actualizarContador() {
+    fetch(`https://ecointercambio-backend-0ts7.onrender.com/api/mensajes/no-leidos/${userId}`)
+        .then(res => res.json())
+        .then(data => {
+            if (data && data.length > 0) {
+                notifSpan.innerText = ` (${data.length})`;
+                notifSpan.style.color = "red";
+            }
+        });
+  }
+  actualizarContador();
 </script>
 </body>
 </html>

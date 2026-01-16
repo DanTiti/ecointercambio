@@ -2,108 +2,132 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8">
-  <title>Mis Publicaciones - EcoIntercambio</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Mis Publicaciones - ReÚtiles</title>
   <link rel="stylesheet" href="css/styles.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 </head>
 <body>
   <div class="navbar">
-    <h1>ReUtiles</h1>
-    <div class="nav-links">
-      <button onclick="location.href='inicio.html'">Inicio</button>
-      <button onclick="location.href='dashboard.html'">Publicar</button>
-      <button onclick="location.href='coincidencias.html'">Coincidencias</button>
-      <button onclick="location.href='sugerencias.html'">Sugerencias</button>
-      <button onclick="location.href='historial.html'">Historial</button>
-      <button onclick="location.href='lista-chat.html'">Chats<span id="notif"></span></button>
-      <button onclick="localStorage.clear(); location.href='login.html'">Salir</button>
+    <div class="nav-container">
+      <div class="logo-container" onclick="location.href='inicio.html'" style="cursor: pointer; display: flex; align-items: center; gap: 10px;">
+        <i class="fas fa-home" style="font-size: 1.5rem;"></i>
+        <h1 style="margin: 0;">ReÚtiles</h1>
+      </div>
+      <div class="nav-main-actions">
+        <button class="btn-visible" onclick="location.href='dashboard.html'"><i class="fas fa-plus"></i> Publicar</button>
+        <button class="btn-visible" onclick="location.href='coincidencias.html'"><i class="fas fa-handshake"></i> Coincidencias</button>
+        
+        <div class="dropdown">
+          <button class="dropbtn" id="menuBtn"><i class="fas fa-bars"></i></button>
+            <div class="dropdown-content" id="myDropdown">
+                <a href="sugerencias.html"><i class="fas fa-lightbulb"></i> Sugerencias</a>
+                <a href="mis-publicaciones.html"><i class="fas fa-folder-open"></i> Mis publicaciones</a>
+                <a href="historial.html"><i class="fas fa-history"></i> Historial</a>
+                <a href="lista-chat.html"><i class="fas fa-comments"></i> Chats <span id="notif"></span></a>
+                <hr>
+                <a href="#" onclick="localStorage.clear(); location.href='login.html'" style="color: #d32f2f;">
+                    <i class="fas fa-sign-out-alt"></i> Salir
+                </a>
+            </div>
+        </div>
+      </div>
     </div>
   </div>
 
-  <div class="container">
-    <h2>Mis publicaciones</h2>
-    <div id="misPublicaciones"></div>
+  <div class="content-wrapper">
+    <div class="container">
+      <div class="section-header" style="text-align: center; margin-bottom: 40px;">
+        <i class="fas fa-folder-open" style="font-size: 2.5rem; color: #1e88e5; margin-bottom: 15px;"></i>
+        <h2 style="margin: 0; color: #333;">Mis publicaciones</h2>
+        <p style="color: #666; margin-top: 5px;">Gestiona los útiles que tienes activos para intercambio.</p>
+      </div>
+
+      <div id="misPublicaciones" class="grid-productos"></div>
+    </div>
   </div>
 
-    <script src="js/notificaciones.js"></script>
+  <footer class="main-footer">
+    <p>&copy; <span id="year"></span> ReÚtiles - Proyecto Escolar</p>
+  </footer>
+  
+  <script src="js/notificaciones.js"></script>
+  <script src="js/menu.js"></script>
 
   <script>
     const userId = localStorage.getItem('userId');
+    document.getElementById("year").textContent = new Date().getFullYear();
+
     if (!userId || userId === '0') location.href = 'login.html';
 
-    fetch(`https://ecointercambio-backend-0ts7.onrender.com/api/productos/mios/${userId}`)
-      .then(res => res.json())
-      .then(productos => {
-        if (!Array.isArray(productos)) {
-          document.getElementById('misPublicaciones').innerHTML = '<p>Error al cargar publicaciones.</p>';
-          console.error('Respuesta inesperada:', productos);
-          return;
-        }
+    function cargarPublicaciones() {
+      fetch(`https://ecointercambio-backend-0ts7.onrender.com/api/productos/mios/${userId}`)
+        .then(res => res.json())
+        .then(productos => {
+          const contenedor = document.getElementById('misPublicaciones');
+          
+          if (!Array.isArray(productos) || productos.length === 0) {
+            contenedor.innerHTML = `
+              <div style="grid-column: 1/-1; text-align: center; padding: 60px 20px;">
+                <i class="fas fa-box-open fa-4x" style="color: #d1d5db; margin-bottom: 20px;"></i>
+                <h3 style="color: #4b5563; margin-bottom: 10px;">Aún no tienes publicaciones</h3>
+                <p style="color: #9ca3af; margin-bottom: 25px;">Publica algo para que otros usuarios puedan verlo.</p>
+                <button class="btn-visible" onclick="location.href='dashboard.html'" 
+                        style="background-color: #1e88e5; color: white; padding: 12px 30px; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; display: inline-flex; align-items: center; gap: 10px;">
+                  <i class="fas fa-plus"></i> Publicar ahora
+                </button>
+              </div>`;
+            return;
+          }
 
-        if (productos.length === 0) {
-          document.getElementById('misPublicaciones').innerHTML = '<p>No tienes publicaciones aún.</p>';
-          return;
-        }
-
-        document.getElementById('misPublicaciones').innerHTML = productos.map(p => `
-          <div class="producto" id="producto-${p.id}">
-            <div class="producto-eliminar">
-              <button class="eliminar" onclick="eliminarProducto(${p.id})">🗑️</button>
+          contenedor.innerHTML = productos.map(p => `
+            <div class="producto" id="producto-${p.id}">
+              <div class="producto-eliminar">
+                <button class="eliminar" onclick="eliminarProducto(${p.id})">
+                  <i class="fas fa-trash"></i>
+                </button>
+              </div>
+              <img src="${p.imagen}" alt="Producto">
+              <div style="padding: 15px;">
+                <h3 style="margin: 0 0 10px 0; font-size: 1.1rem;">${p.ofrece}</h3>
+                <p style="margin: 5px 0; font-size: 0.9rem; color: #666;">
+                  <i class="fas fa-search" style="color: #1e88e5;"></i> Busca: <b>${p.busca}</b>
+                </p>
+                <div style="margin-top: 15px;">
+                  <button class="btn-send" onclick="marcarIntercambiado(${p.id})" style="width: 100%; padding: 10px; background-color: #4caf50;">
+                    <i class="fas fa-check-circle"></i> Marcar Intercambiado
+                  </button>
+                </div>
+              </div>
             </div>
-            <img src="${p.imagen}" alt="">
-            <strong>${p.nombreUsuario}</strong><br>
-            Ofrece: ${p.ofrece}<br>
-            Busca: ${p.busca}<br>
-            <button onclick="marcarIntercambiado(${p.id})">Marcar como intercambiado</button>
-          </div>
-        `).join('');
-      });
-
-  async function eliminarProducto(id) {
-    const userId = localStorage.getItem('userId');
-    if (!confirm("¿Seguro que deseas eliminar este producto?")) return;
-
-    try {
-      const res = await fetch(`https://ecointercambio-backend-0ts7.onrender.com/api/productos/${id}`, {
-        method: 'DELETE',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({ userId })
-      });
-
-      const data = await res.json();
-
-      if (res.ok) {
-        alert(data.mensaje);
-        document.getElementById(`producto-${id}`).remove();
-      } else {
-        alert(data.error || 'Error al eliminar');
-      }
-    } catch (err) {
-      alert('Error al conectar con el servidor');
+          `).join('');
+        });
     }
-  }
 
-  function marcarIntercambiado(id) {
-    if (!confirm("¿Confirmas que este producto ya fue intercambiado?")) return;
+    async function eliminarProducto(id) {
+      if (!confirm("¿Seguro que deseas eliminar esta publicación?")) return;
+      try {
+        const res = await fetch(`https://ecointercambio-backend-0ts7.onrender.com/api/productos/${id}`, {
+          method: 'DELETE',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ userId })
+        });
+        if (res.ok) document.getElementById(`producto-${id}`).remove();
+      } catch (err) { alert('Error de conexión'); }
+    }
 
-    fetch(`https://ecointercambio-backend-0ts7.onrender.com/api/productos/marcar-intercambiado/${id}`, {
-      method: 'PUT'
-    })
-      .then(res => res.json())
-      .then(data => {
-        alert(data.message);
-        const elemento = document.getElementById(`producto-${id}`);
-        if (elemento) {
-          elemento.remove();
-        }
+    function marcarIntercambiado(id) {
+      if (!confirm("¿Confirmas que este producto ya fue intercambiado?")) return;
+      fetch(`https://ecointercambio-backend-0ts7.onrender.com/api/productos/marcar-intercambiado/${id}`, {
+        method: 'PUT'
       })
-      .catch(err => {
-        console.error("Error al marcar como intercambiado:", err);
-        alert("Ocurrió un error. Intenta de nuevo.");
+      .then(() => {
+        document.getElementById(`producto-${id}`).remove();
+        alert("¡Felicidades por tu intercambio!");
       });
-  }
+    }
 
+    cargarPublicaciones();
   </script>
 </body>
 </html>
