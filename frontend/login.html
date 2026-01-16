@@ -45,7 +45,6 @@
       const errorText = document.getElementById('errorText');
       const loginBtn = document.getElementById('loginBtn');
       
-      // Feedback visual de carga
       loginBtn.innerText = "Cargando...";
       loginBtn.disabled = true;
       errorMsg.style.display = 'none';
@@ -68,7 +67,6 @@
           localStorage.setItem("nickname", data.nickname);
           window.location.href = "inicio.html";
         } else {
-          // Mostrar error en el div en lugar de alert
           errorText.innerText = data.error || "Error al iniciar sesión";
           errorMsg.style.display = 'flex';
           loginBtn.innerText = "Entrar";

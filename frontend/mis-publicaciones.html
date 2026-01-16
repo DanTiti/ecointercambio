@@ -74,7 +74,6 @@
   <script>
     const userId = localStorage.getItem('userId');
     document.getElementById("year").textContent = new Date().getFullYear();
-    let accionPendiente = null;
 
     if (!userId || userId === '0') location.href = 'login.html';
 
