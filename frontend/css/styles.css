@@ -1,19 +1,28 @@
-/* Reset básico */
 * {
   box-sizing: border-box;
   margin: 0;
   padding: 0;
 }
 
-/* Fondo general */
 body {
   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
   background: #f4f7fc;
   color: #333;
+  display: flex;
+  flex-direction: column;
   min-height: 100vh;
 }
 
-/* Contenedor más amplio */
+.logo-container:hover{
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+}
+
+.content-wrapper {
+  flex: 1;
+  width: 100%;
+}
+
 .container {
   max-width: 1200px;
   margin: auto;
@@ -24,7 +33,7 @@ body {
   display: flex;
   justify-content: center;
   align-items: center;
-  min-height: calc(100vh - 60px); /* Ajusta este valor */
+  min-height: calc(100vh - 70px); 
   padding: 20px;
   box-sizing: border-box;
   width: 100%;
@@ -40,13 +49,121 @@ body {
   text-align: center;
 }
 
-/* Títulos */
+.navbar {
+    height: 70px;
+    width: 100%;
+    background: #1e88e5;
+    padding: 0 20px;
+    color: white;
+    display: flex;
+    align-items: center;
+    position: sticky;
+    top: 0;
+    z-index: 1000;
+}
+
+.nav-container {
+    max-width: 1200px;
+    width: 100%;
+    margin: auto;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.nav-main-actions {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.nav-main-actions button, .btn-visible {
+    background: white !important;
+    color: #1e88e5 !important;
+    border: none;
+    padding: 8px 15px;
+    border-radius: 20px;
+    font-weight: bold;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    height: 38px;
+    gap: 8px;
+    transition: background 0.3s;
+}
+
+.nav-main-actions button i {
+    font-size: 1rem !important;
+    vertical-align: middle;
+}
+
+.nav-main-actions button:hover, .btn-visible:hover {
+    background: #dae7f6 !important;
+    background-color: #f0f7ff;
+    border-color: #1e88e5;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+}
+
+.dropdown {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+.dropbtn {
+    background: white;
+    color: #1e88e5;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    border: none;
+    cursor: pointer;
+    font-size: 18px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+}
+
+.dropdown-content {
+  display: none;
+  position: absolute;
+  right: 0;
+  top: 100%;
+  background-color: white;
+  min-width: 180px;
+  box-shadow: 0px 8px 16px rgba(0,0,0,0.1);
+  border-radius: 8px;
+  z-index: 1100;
+  margin-top: 10px;
+  overflow: hidden;
+}
+
+.dropdown-content a {
+  color: #333;
+  padding: 12px 16px;
+  text-decoration: none;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.dropdown-content a i {
+    width: 20px;
+    text-align: center;
+    color: #1e88e5;
+}
+
+.dropdown-content a:hover { background-color: #f1f1f1; }
+.show { display: block; }
+
 h2, h3 {
   color: #1e88e5;
   margin-bottom: 15px;
 }
 
-/* Botones */
 button {
   padding: 10px 20px;
   background-color: #1e88e5;
@@ -54,14 +171,12 @@ button {
   border: none;
   border-radius: 6px;
   cursor: pointer;
-  margin-left: 8px;
 }
 
 button:hover {
   background-color: #1565c0;
 }
 
-/* Formularios */
 form input, form button {
   width: 100%;
   padding: 12px;
@@ -71,7 +186,16 @@ form input, form button {
   font-size: 14px;
 }
 
-/* Grid de productos */
+.link {
+  text-align: center;
+  margin-top: 10px;
+}
+
+.link a {
+  text-decoration: none;
+  color: #1e88e5;
+}
+
 #otros, #matches, #publicaciones, #misPublicaciones, #intercambiados, #sugerencias {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
@@ -101,59 +225,6 @@ form input, form button {
   margin-bottom: 10px;
 }
 
-.link {
-  text-align: center;
-  margin-top: 10px;
-}
-
-.link a {
-  text-decoration: none;
-  color: #1e88e5;
-}
-
-/* Barra de navegación */
-.navbar {
-  height: 60px;
-  width: 100%;
-  background: #1e88e5;
-  padding: 15px 20px;
-  color: white;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-
-.navbar h1 {
-  font-size: 20px;
-}
-
-.navbar .nav-links button {
-  background: white;
-  color: #1e88e5;
-  margin-left: 10px;
-  font-weight: bold;
-}
-
-.match-perfecto {
-  border-left: 6px solid #4caf50; /* verde */
-}
-
-.match-categoria {
-  border-left: 6px solid #2196f3; /* azul */
-}
-
-.match-parcial {
-  border-left: 6px solid #ffc107; /* amarillo */
-}
-
-.explicacion-match {
-  cursor: help;
-  font-size: 14px;
-  margin-bottom: 5px;
-  display: inline-block;
-  color: #666;
-}
-
 .producto-eliminar {
   position: absolute;
   top: 5px;
@@ -170,87 +241,87 @@ form input, form button {
   transition: background 0.2s ease;
 }
 
-.eliminar:hover {
-  background: #ffcccc;
+.eliminar:hover { background: #ffcccc; }
+
+.chat-item {
+    display: flex;
+    align-items: center;
+    padding: 15px;
+    margin-bottom: 10px;
+    background-color: #fff;
+    border: 1px solid #e0e0e0;
+    border-radius: 10px;
+    transition: all 0.3s ease;
+    cursor: pointer;
+    text-decoration: none;
+    color: inherit;
 }
 
-/* Contenedor general de la lista de chats */
-#listaChats {
-  max-width: 700px;
-  margin: 40px auto;
-  padding: 0 20px;
-  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+.chat-item:hover {
+    background-color: #f0f7ff;
+    border-color: #1e88e5;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
 }
 
-/* Cada chat como una "tarjeta" */
-#listaChats .chat-item {
-  display: flex;
-  flex-direction: column;
-  background-color: #ffffff;
-  border: 1px solid #dee2e6;
-  border-radius: 10px;
-  margin-bottom: 15px;
-  padding: 15px 20px;
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.06);
-  transition: background-color 0.25s ease;
-  cursor: pointer;
+.chat-item i.fa-user-circle {
+    font-size: 2rem;
+    color: #1e88e5;
+    margin-right: 15px;
 }
 
-#listaChats .chat-item:hover {
-  background-color: #f1fdf5;
+.chat-text-info {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    flex: 1;
 }
 
-/* Nombre del contacto */
 .chat-item .nickname {
-  font-size: 18px;
-  font-weight: 600;
-  color: #1e88e5; /* verde Bootstrap */
-  margin-bottom: 5px;
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: #1e88e5;
+    display: flex;
+    align-items: center;
+    gap: 8px;
 }
 
-/* Último mensaje */
 .chat-item .lastMessage {
-  font-size: 14px;
-  color: #495057;
-  font-style: italic;
+    font-size: 0.9rem;
+    color: #666;
+    margin-left: 28px;
 }
 
-/* Estilo del mensaje cuando no hay chats */
-#listaChats p {
-  text-align: center;
-  color: #888;
-  font-style: italic;
-  margin-top: 30px;
+.chat-arrow {
+    color: #ccc;
+    font-size: 1.2rem;
+    padding-left: 15px;
 }
 
 .chat-container {
   max-width: 800px;
   margin: 30px auto;
   background-color: white;
-  padding: 20px;
+  padding: 25px;
   border-radius: 10px;
   box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
 }
 
-.chat-container h2 {
-  margin-bottom: 20px;
-}
-
 .mensajes {
-  height: 300px;
+  height: 350px;
   overflow-y: auto;
-  border: 1px solid #ccc;
+  border: 1px solid #f0f0f0;
   border-radius: 6px;
-  padding: 10px;
+  padding: 15px;
   margin-bottom: 15px;
   background-color: #fdfdfd;
 }
 
 .mensaje {
-  padding: 8px;
+  padding: 10px;
   margin-bottom: 10px;
-  border-radius: 8px;
-  max-width: 70%;
+  border-radius: 10px;
+  max-width: 75%;
   clear: both;
 }
 
@@ -265,44 +336,61 @@ form input, form button {
   border: 1px solid #ddd;
 }
 
-.form-chat {
-  display: flex;
-  flex-direction: column;
-}
+.form-chat { display: flex; flex-direction: column; }
 
 .form-chat textarea {
   resize: none;
-  padding: 10px;
+  padding: 12px;
   font-size: 14px;
-  border-radius: 6px;
+  border-radius: 8px;
   border: 1px solid #ccc;
   margin-bottom: 10px;
 }
 
-.form-chat button {
-  align-self: flex-end;
-  background-color: #006699;
-  color: white;
-  border: none;
-  padding: 10px 20px;
-  border-radius: 6px;
-  cursor: pointer;
+.message-send-card {
+    max-width: 600px;
+    margin: 50px auto;
+    padding: 30px;
 }
 
-.form-chat button:hover {
-  background-color: #004466;
+.message-send-card textarea {
+    width: 100%;
+    min-height: 150px;
+    border: 1px solid #ddd;
+    border-radius: 12px;
+    padding: 15px;
+    font-family: inherit;
+    font-size: 1rem;
+    background-color: #f9f9f9;
+    transition: all 0.3s ease;
 }
+
+.message-send-card textarea:focus {
+    border-color: #1e88e5;
+    background-color: white;
+    box-shadow: 0 0 8px rgba(30, 136, 229, 0.1);
+    outline: none;
+}
+
+.btn-send {
+    margin-top: 20px;
+    width: 100%;
+    padding: 15px;
+    font-size: 1.1rem;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.match-perfecto { border-left: 6px solid #4caf50; }
+.match-categoria { border-left: 6px solid #2196f3; }
+.match-parcial { border-left: 6px solid #ffc107; }
 
 .modal-match {
   position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background-color: rgba(0, 0, 0, 0.5); /* fondo semi-transparente */
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  top: 0; left: 0; width: 100%; height: 100%;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex; align-items: center; justify-content: center;
   z-index: 9999;
 }
 
@@ -317,43 +405,16 @@ form input, form button {
   animation: aparecer 0.3s ease-out;
 }
 
-.modal-content h3 {
-  margin-top: 0;
-  color: #2c3e50;
-}
-
-.modal-content p {
-  margin: 15px 0;
-  font-size: 16px;
-}
-
-.modal-content button {
-  margin: 10px 5px 0;
-  padding: 10px 20px;
-  border: none;
-  border-radius: 8px;
-  background-color: #27ae60;
-  color: white;
-  cursor: pointer;
-  font-weight: bold;
-  transition: background-color 0.2s ease-in-out;
-}
-
-.modal-content button:hover {
-  background-color: #1e8449;
-}
-
 @keyframes aparecer {
-  from {
-    transform: scale(0.9);
-    opacity: 0;
-  }
-  to {
-    transform: scale(1);
-    opacity: 1;
-  }
+  from { transform: scale(0.9); opacity: 0; }
+  to { transform: scale(1); opacity: 1; }
 }
 
-
-
-
+.main-footer {
+  background-color: #1e88e5;
+  color: white;
+  text-align: center;
+  padding: 15px 0;
+  width: 100%;
+  margin-top: auto;
+}

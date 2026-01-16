@@ -3,85 +3,143 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Publicar - ReUtiles</title>
+  <title>Publicar - ReÚtiles</title>
   <link rel="stylesheet" href="css/styles.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 </head>
 <body>
   <div class="navbar">
-    <h1>ReUtiles</h1>
-    <div class="nav-links">
-      <button onclick="location.href='inicio.html'">Inicio</button>
-      <button onclick="location.href='coincidencias.html'">Coincidencias</button>
-      <button onclick="location.href='sugerencias.html'">Sugerencias</button>
-      <button onclick="location.href='mis-publicaciones.html'">Mis publicaciones</button>
-      <button onclick="location.href='historial.html'">Historial</button>
-      <button onclick="location.href='lista-chat.html'">Chats<span id="notif"></span></button>
-      <button onclick="localStorage.clear(); location.href='login.html'">Salir</button>
+    <div class="nav-container">
+      <div class="logo-container" onclick="location.href='inicio.html'" style="cursor: pointer; display: flex; align-items: center; gap: 10px;">
+        <i class="fas fa-home" style="font-size: 1.5rem;"></i>
+        <h1 style="margin: 0;">ReÚtiles</h1>
+      </div>
+      <div class="nav-main-actions">
+        <button class="btn-visible" onclick="location.href='coincidencias.html'"><i class="fas fa-handshake"></i> Coincidencias</button>
+        
+        <div class="dropdown">
+          <button class="dropbtn" id="menuBtn"><i class="fas fa-bars"></i></button>
+            <div class="dropdown-content" id="myDropdown">
+                <a href="sugerencias.html"><i class="fas fa-lightbulb"></i> Sugerencias</a>
+                <a href="mis-publicaciones.html"><i class="fas fa-folder-open"></i> Mis publicaciones</a>
+                <a href="historial.html"><i class="fas fa-history"></i> Historial</a>
+                <a href="lista-chat.html"><i class="fas fa-comments"></i> Chats <span id="notif"></span></a>
+                <hr>
+                <a href="#" onclick="localStorage.clear(); location.href='login.html'" style="color: #d32f2f;">
+                    <i class="fas fa-sign-out-alt"></i> Salir
+                </a>
+            </div>
+        </div>
+      </div>
     </div>
   </div>
 
-  <div class="container">
-    <h2>Publica un nuevo útil</h2>
-    <form id="formProducto" enctype="multipart/form-data">
-      <input name="busca" placeholder="Buscas (ej: tijeras)" required>
-      <input name="ofrece" placeholder="Ofreces (ej: regla)" required>
-      <input type="file" name="imagen" accept="image/*">
-      <button type="submit">Publicar</button>
-    </form>
-    <div id="coincidenciasRapidas" style="margin-top:20px;"></div>
+  <div class="content-wrapper">
+    <div class="container">
+      <div class="chat-container" style="max-width: 650px; margin: 30px auto; padding: 30px;">
+        <div class="chat-header" style="margin-bottom: 20px; border-bottom: 1px solid #eee; padding-bottom: 15px;">
+          <h2 style="margin: 0; color: #333;"><i class="fas fa-plus-circle" style="color: #1e88e5;"></i> Publica un nuevo útil</h2>
+        </div>
+
+        <form id="formProducto" enctype="multipart/form-data" class="form-chat" style="display: flex; flex-direction: column; gap: 20px;">
+          <div class="input-group">
+            <label style="display: block; margin-bottom: 8px; font-weight: bold; color: #555;">¿Qué buscas? (ej: tijeras)</label>
+            <input name="busca" placeholder="Ej: Sacapuntas de metal" required style="width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 8px;">
+          </div>
+
+          <div class="input-group">
+            <label style="display: block; margin-bottom: 8px; font-weight: bold; color: #555;">¿Qué ofreces? (ej: regla)</label>
+            <input name="ofrece" placeholder="Ej: Regla de 30cm" required style="width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 8px;">
+          </div>
+
+          <div class="input-group">
+            <label style="display: block; margin-bottom: 8px; font-weight: bold; color: #555;">Foto del producto</label>
+            <div style="background: #f9f9f9; padding: 15px; border: 2px dashed #ccc; border-radius: 8px; text-align: center;">
+              <input type="file" name="imagen" accept="image/*" required>
+            </div>
+          </div>
+
+          <button type="submit" class="btn-send" style="width: 100%; padding: 15px; font-size: 1.1rem; justify-content: center;">
+            <i class="fas fa-share-square"></i> Publicar Ahora
+          </button>
+        </form>
+      </div>
+
+      <div id="coincidenciasRapidas" style="margin-top: 40px;"></div>
+    </div>
   </div>
 
+  <footer class="main-footer">
+    <p>&copy; <span id="year"></span> ReÚtiles - Proyecto Escolar</p>
+  </footer>
+
   <script src="js/notificaciones.js"></script>
+  <script src="js/menu.js"></script>
 
   <script>
     const userId = localStorage.getItem('userId');
+    document.getElementById("year").textContent = new Date().getFullYear();
+    
     if (!userId || userId === '0') location.href = 'login.html';
 
     async function publicarProducto(e) {
       e.preventDefault();
+      const btn = e.target.querySelector('button');
       const formData = new FormData(e.target);
       formData.append('usuario_id', userId);
 
-      const res = await fetch('https://ecointercambio-backend-0ts7.onrender.com/api/productos/add', {
-        method: 'POST',
-        body: formData
-      });
+      btn.disabled = true;
+      btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Publicando...';
 
-      const data = await res.json();
-      alert(data.message);
-      e.target.reset();
-      cargarCoincidencias();
+      try {
+        const res = await fetch('https://ecointercambio-backend-0ts7.onrender.com/api/productos/add', {
+          method: 'POST',
+          body: formData
+        });
+        const data = await res.json();
+        alert(data.message);
+        e.target.reset();
+        cargarCoincidencias();
+      } catch (err) {
+        alert("Error al conectar con el servidor");
+      } finally {
+        btn.disabled = false;
+        btn.innerHTML = '<i class="fas fa-share-square"></i> Publicar Ahora';
+      }
     }
 
     async function cargarCoincidencias() {
       const res = await fetch(`https://ecointercambio-backend-0ts7.onrender.com/api/match/${userId}`);
       const coincidencias = await res.json();
+      const container = document.getElementById('coincidenciasRapidas');
 
       if (coincidencias.length > 0) {
-        document.getElementById('coincidenciasRapidas').innerHTML = `
-          <strong>¡Coincidencias encontradas!</strong><br>
-          ${coincidencias.map(c => `
-            <div class="producto" onclick="abrirMensaje(${c.usuario}, '${encodeURIComponent(c.nombreUsuario)}')">
-              <img src="${c.imagen}" alt="">
-              Tú buscas: ${c.buscaYo} | ofreces: ${c.ofrezcoYo}<br>
-              Usuario: <b>${c.nombreUsuario}</b> busca: ${c.buscaEl} | ofrece: ${c.ofreceEl}<br>
-              Producto: ${c.nombreProductoEl}
-            </div>
-          `).join('')}
+        container.innerHTML = `
+          <h3 style="text-align: center; color: #1e88e5; margin-bottom: 20px;">¡Encontramos coincidencias para ti!</h3>
+          <div class="grid-productos" id="matchesGrid">
+            ${coincidencias.map(c => `
+              <div class="producto" onclick="abrirMensaje(${c.usuario}, '${encodeURIComponent(c.nombreUsuario)}')" style="cursor: pointer;">
+                <img src="${c.imagen}" alt="Producto">
+                <div style="padding: 10px;">
+                  <span style="display: block; font-size: 0.8rem; color: #666;">Usuario: <b>${c.nombreUsuario}</b></span>
+                  <p style="margin: 5px 0;">Ofrece: <b>${c.nombreProductoEl}</b></p>
+                  <p style="font-size: 0.85rem; color: #1e88e5;"><i class="fas fa-comments"></i> Toca para chatear</p>
+                </div>
+              </div>
+            `).join('')}
+          </div>
         `;
-      } else {
-        document.getElementById('coincidenciasRapidas').innerHTML = `<p>No se encontraron coincidencias por ahora.</p>`;
       }
     }
 
     function abrirMensaje(usuarioId, nombreUsuario) {
-      const decoded = decodeURIComponent(nombreUsuario);
       localStorage.setItem('contactoId', usuarioId);
-      localStorage.setItem('contactoNombre', decoded);
+      localStorage.setItem('contactoNombre', decodeURIComponent(nombreUsuario));
       location.href = 'enviar-mensaje.html';
     }
 
     document.getElementById('formProducto').addEventListener('submit', publicarProducto);
+    cargarCoincidencias();
   </script>
 </body>
 </html>

@@ -1,36 +1,67 @@
 <!DOCTYPE html>
 <html lang="es">
-  <!-- hola gabin -->
-  <!-- gola titi -->
 <head>
   <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Chat en tiempo real - ReUtiles</title>
   <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
   <link rel="stylesheet" href="css/styles.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 </head>
 <body>
+
   <div class="navbar">
-    <h1>ReUtiles</h1>
-    <div class="nav-links">
-      <button onclick="location.href='inicio.html'">Inicio</button>
-      <button onclick="location.href='dashboard.html'">Publicar</button>
-      <button onclick="location.href='coincidencias.html'">Coincidencias</button>
-      <button onclick="location.href='sugerencias.html'">Sugerencias</button>
-      <button onclick="location.href='mis-publicaciones.html'">Mis publicaciones</button>
-      <button onclick="location.href='historial.html'">Historial</button>
-      <button onclick="location.href='lista-chat.html'">Chats<span id="notif"></span></button>
-      <button onclick="localStorage.clear(); location.href='login.html'">Salir</button>
+    <div class="nav-container">
+      <div class="logo-container" onclick="location.href='inicio.html'" style="cursor: pointer; display: flex; align-items: center; gap: 10px;">
+        <i class="fas fa-home" style="font-size: 1.5rem;"></i>
+        <h1 style="margin: 0;">ReÚtiles</h1>
+      </div>
+      <div class="nav-main-actions">
+        <button onclick="location.href='dashboard.html'"><i class="fas fa-plus"></i>Publicar</button>
+        <button onclick="location.href='coincidencias.html'"><i class="fas fa-handshake"></i> Coincidencias</button>
+        
+        <div class="dropdown">
+          <button class="dropbtn" id="menuBtn"><i class="fas fa-bars"></i></button>
+            <div class="dropdown-content" id="myDropdown">
+                <a href="sugerencias.html"><i class="fas fa-lightbulb"></i> Sugerencias</a>
+                <a href="mis-publicaciones.html"><i class="fas fa-folder-open"></i> Mis publicaciones</a>
+                <a href="historial.html"><i class="fas fa-history"></i> Historial</a>
+                <a href="lista-chat.html"><i class="fas fa-comments"></i> Chats <span id="notif"></span></a>
+                <hr>
+                <a href="#" onclick="localStorage.clear(); location.href='login.html'" style="color: #d32f2f;">
+                    <i class="fas fa-sign-out-alt"></i> Salir
+                </a>
+            </div>
+        </div>
+      </div>
     </div>
   </div>
 
-  <div class="chat-container">
-    <h2>Chat con <span id="nombreReceptor"></span></h2>
-    <div id="mensajes" class="mensajes"></div>
-    <form id="formChat" class="form-chat">
-      <textarea id="textoMensaje" placeholder="Escribe tu mensaje..." required></textarea>
-      <button type="submit">Enviar</button>
-    </form>
+  <div class="content-wrapper">
+    <div class="container">
+      <div class="chat-container">
+        <div class="chat-header">
+          <button class="btn-back" onclick="location.href='lista-chat.html'"><i class="fas fa-arrow-left"></i></button>
+          <h2>Chat con <span id="nombreReceptor"></span></h2>
+        </div>
+        
+        <div id="mensajes" class="mensajes"></div>
+        
+        <form id="formChat" class="form-chat">
+          <textarea id="textoMensaje" placeholder="Escribe tu mensaje..." required></textarea>
+          <button type="submit" class="btn-send">
+            <i class="fas fa-paper-plane"></i> Enviar
+          </button>
+        </form>
+      </div>
+    </div>
   </div>
+
+  <footer class="main-footer">
+    <p>&copy; <span id="year"></span> ReÚtiles - Proyecto Escolar</p>
+  </footer>
+
+  <script src="js/menu.js"></script>
 
   <script>
     const socket = io('https://ecointercambio-backend-0ts7.onrender.com');
