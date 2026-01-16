@@ -13,6 +13,24 @@ body {
   min-height: 100vh;
 }
 
+.error-container {
+    background-color: #fee2e2;
+    color: #dc2626;
+    padding: 10px;
+    border-radius: 8px;
+    margin-bottom: 15px;
+    font-size: 0.9rem;
+    display: none;
+    border: 1px solid #fecaca;
+    align-items: center;
+    gap: 10px;
+    justify-content: center;
+}
+
+.error-container i {
+    font-size: 1rem;
+}
+
 .logo-container:hover{
     transform: translateY(-2px);
     box-shadow: 0 4px 8px rgba(0,0,0,0.1);
@@ -226,22 +244,55 @@ form input, form button {
 }
 
 .producto-eliminar {
-  position: absolute;
-  top: 5px;
-  right: 5px;
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    z-index: 5;
 }
 
 .eliminar {
-  background: rgba(255, 255, 255, 0.8);
-  border: none;
-  border-radius: 50%;
-  padding: 5px;
-  cursor: pointer;
-  font-size: 16px;
-  transition: background 0.2s ease;
+    background: #fee2e2 !important;
+    color: #ef4444 !important;
+    border: 1px solid #fecaca !important;
+    width: 38px;
+    height: 38px;
+    border-radius: 50% !important;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
 }
 
-.eliminar:hover { background: #ffcccc; }
+.eliminar:hover {
+    background: #ef4444 !important;
+    color: white !important;
+    transform: scale(1.1);
+}
+
+.modal-confirmacion {
+    position: fixed;
+    top: 0; left: 0; width: 100%; height: 100%;
+    background: rgba(0, 0, 0, 0.6);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    z-index: 2000;
+}
+
+.modal-confirm-content {
+    background: white;
+    padding: 30px;
+    border-radius: 12px;
+    max-width: 400px;
+    width: 90%;
+    text-align: center;
+}
+
+.modal-confirm-btns {
+    display: flex;
+    gap: 10px;
+    margin-top: 20px;
+}
 
 .chat-item {
     display: flex;

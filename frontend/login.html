@@ -2,21 +2,33 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8">
-  <title>Login</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ReÚtiles - Login</title>
   <link rel="stylesheet" href="css/styles.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 </head>
 <body>
   <div class="navbar">
-    <h1>ReÙtiles</h1>
+    <div class="nav-container">
+      <div class="logo-container">
+        <h1>ReÚtiles</h1>
+      </div>
+    </div>
   </div>
 
   <div class="wrapper">
     <div class="container-inigistro">
       <h2>Iniciar Sesión</h2>
+      
+      <div id="errorMsg" class="error-container">
+        <i class="fas fa-exclamation-circle"></i>
+        <span id="errorText"></span>
+      </div>
+
       <form id="loginForm">
         <input type="email" name="email" placeholder="Correo electrónico" required>
         <input type="password" name="password" placeholder="Contraseña" required>
-        <button type="submit">Iniciar sesión</button>
+        <button type="submit" id="loginBtn">Entrar</button>
       </form>
 
       <div class="link">
@@ -28,28 +40,47 @@
   <script>
     document.getElementById('loginForm').addEventListener('submit', async (e) => {
       e.preventDefault();
+      
+      const errorMsg = document.getElementById('errorMsg');
+      const errorText = document.getElementById('errorText');
+      const loginBtn = document.getElementById('loginBtn');
+      
+      // Feedback visual de carga
+      loginBtn.innerText = "Cargando...";
+      loginBtn.disabled = true;
+      errorMsg.style.display = 'none';
+
       const form = e.target;
       const email = form.email.value;
       const password = form.password.value;
-      const res = await fetch('https://ecointercambio-backend-0ts7.onrender.com/api/auth/login', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, password })
-      });
 
-      const data = await res.json();
-      console.log(data);
-      if (res.ok) {
-        localStorage.setItem("userId", data.userId);
-        localStorage.setItem("nickname", data.nickname);
-        window.location.href = "inicio.html";
-      } else {
-        alert(data.error);
+      try {
+        const res = await fetch('https://ecointercambio-backend-0ts7.onrender.com/api/auth/login', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email, password })
+        });
+
+        const data = await res.json();
+
+        if (res.ok) {
+          localStorage.setItem("userId", data.userId);
+          localStorage.setItem("nickname", data.nickname);
+          window.location.href = "inicio.html";
+        } else {
+          // Mostrar error en el div en lugar de alert
+          errorText.innerText = data.error || "Error al iniciar sesión";
+          errorMsg.style.display = 'flex';
+          loginBtn.innerText = "Entrar";
+          loginBtn.disabled = false;
+        }
+      } catch (err) {
+        errorText.innerText = "Error de conexión con el servidor";
+        errorMsg.style.display = 'flex';
+        loginBtn.innerText = "Entrar";
+        loginBtn.disabled = false;
       }
-
     });
   </script>
 </body>
 </html>
-
-<!-- faifhasdhfdasifjasdfhjadkfjioasdhnfkafhasdjfnaksfh -->

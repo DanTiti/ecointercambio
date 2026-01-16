@@ -27,7 +27,7 @@
                 <a href="historial.html"><i class="fas fa-history"></i> Historial</a>
                 <a href="lista-chat.html"><i class="fas fa-comments"></i> Chats <span id="notif"></span></a>
                 <hr>
-                <a href="#" onclick="localStorage.clear(); location.href='login.html'" style="color: #d32f2f;">
+                <a href="#" onclick="confirmarCerrarSesion()" style="color: #d32f2f;">
                     <i class="fas fa-sign-out-alt"></i> Salir
                 </a>
             </div>
@@ -54,6 +54,34 @@
     const userId = localStorage.getItem('userId');
     if (!userId || userId === '0') location.href = 'login.html';
     document.getElementById("year").textContent = new Date().getFullYear();
+
+    fetch(`https://ecointercambio-backend-0ts7.onrender.com/api/match/nuevas/${userId}`)
+      .then(res => res.json())
+      .then(data => {
+        if (Array.isArray(data) && data.length > 0) {
+          const match = data[0];
+          const modal = document.createElement('div');
+          modal.className = 'modal-match';
+          modal.innerHTML = `
+            <div class="modal-content">
+              <h3>🎉 ¡Nuevo Match ${match.tipo === 'perfecto' ? 'Perfecto' : 'Parcial'}!</h3>
+              <div class="imagenes-match" style="display: flex; gap: 20px; justify-content: center;">
+                <div style="text-align: center;">
+                  <p><b>Producto de ${match.nombreUsuario}</b></p>
+                  <img src="${match.imagen}" alt="Producto del otro" style="max-width: 150px; border-radius: 8px;">
+                </div>
+              </div>
+              <p><b>${match.nombreUsuario}</b> ofrece <b>${match.ofreceEl}</b> y busca <b>${match.buscaEl}</b></p>
+              <button onclick="abrirMensaje(${match.usuario}, '${encodeURIComponent(match.nombreUsuario)}')">Enviar mensaje</button>
+              <button onclick="this.closest('.modal-match').remove()">Cerrar</button>
+            </div>
+          `;
+          document.body.appendChild(modal);
+        }
+      });
+
+    fetch(`https://ecointercambio-backend-0ts7.onrender.com/api/match/revisado/${userId}`, { method: 'PUT' });
+
 
     async function cargarPublicaciones() {
       const res = await fetch(`https://ecointercambio-backend-0ts7.onrender.com/api/productos/todos/${userId}`);

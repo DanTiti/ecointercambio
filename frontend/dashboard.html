@@ -25,7 +25,7 @@
                 <a href="historial.html"><i class="fas fa-history"></i> Historial</a>
                 <a href="lista-chat.html"><i class="fas fa-comments"></i> Chats <span id="notif"></span></a>
                 <hr>
-                <a href="#" onclick="localStorage.clear(); location.href='login.html'" style="color: #d32f2f;">
+                <a href="#" onclick="confirmarCerrarSesion()" style="color: #d32f2f;">
                     <i class="fas fa-sign-out-alt"></i> Salir
                 </a>
             </div>
@@ -40,6 +40,13 @@
         <div class="chat-header" style="margin-bottom: 20px; border-bottom: 1px solid #eee; padding-bottom: 15px;">
           <h2 style="margin: 0; color: #333;"><i class="fas fa-plus-circle" style="color: #1e88e5;"></i> Publica un nuevo útil</h2>
         </div>
+
+        <div id="statusMsg" class="error-container" style="margin-bottom: 20px;">
+          <i id="statusIcon" class="fas fa-exclamation-circle"></i>
+          <span id="statusText"></span>
+        </div>
+
+        <form id="formProducto" enctype="multipart/form-data" class="form-chat" ...>
 
         <form id="formProducto" enctype="multipart/form-data" class="form-chat" style="display: flex; flex-direction: column; gap: 20px;">
           <div class="input-group">
@@ -84,24 +91,54 @@
 
     async function publicarProducto(e) {
       e.preventDefault();
+      
+      const statusMsg = document.getElementById('statusMsg');
+      const statusText = document.getElementById('statusText');
+      const statusIcon = document.getElementById('statusIcon');
       const btn = e.target.querySelector('button');
-      const formData = new FormData(e.target);
-      formData.append('usuario_id', userId);
-
+      
+      statusMsg.style.display = 'none';
       btn.disabled = true;
       btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Publicando...';
+
+      const formData = new FormData(e.target);
+      formData.append('usuario_id', userId);
 
       try {
         const res = await fetch('https://ecointercambio-backend-0ts7.onrender.com/api/productos/add', {
           method: 'POST',
           body: formData
         });
+        
         const data = await res.json();
-        alert(data.message);
-        e.target.reset();
-        cargarCoincidencias();
+
+        if (res.ok) {
+          // ÉXITO: Estilo verde
+          statusMsg.style.backgroundColor = '#dcfce7'; 
+          statusMsg.style.color = '#16a34a';
+          statusMsg.style.borderColor = '#bbf7d0';
+          statusIcon.className = "fas fa-check-circle";
+          statusText.innerText = "¡Publicado con éxito!";
+          statusMsg.style.display = 'flex';
+          
+          e.target.reset(); // Limpiar formulario
+          cargarCoincidencias(); // Actualizar lista de abajo
+          
+          // Ocultar mensaje después de 5 segundos
+          setTimeout(() => { statusMsg.style.display = 'none'; }, 5000);
+        } else {
+          // ERROR CONTROLADO: Estilo rojo
+          statusMsg.style.backgroundColor = '#fee2e2';
+          statusMsg.style.color = '#dc2626';
+          statusMsg.style.borderColor = '#fecaca';
+          statusIcon.className = "fas fa-exclamation-circle";
+          statusText.innerText = data.error || data.message || "Error al publicar";
+          statusMsg.style.display = 'flex';
+        }
       } catch (err) {
-        alert("Error al conectar con el servidor");
+        // ERROR DE RED
+        statusText.innerText = "Error de conexión con el servidor";
+        statusMsg.style.display = 'flex';
       } finally {
         btn.disabled = false;
         btn.innerHTML = '<i class="fas fa-share-square"></i> Publicar Ahora';
