@@ -44,7 +44,7 @@ router.post('/login', async (req, res) => {
     res.status(200).json({ message: 'Login exitoso', userId: user.id, nickname: user.nickname });
   } catch (err) {
     console.error(err);
-    res.status(500).json({ error: 'Error en el servidor' });
+    res.status(500).json({ error: 'Usuario no encontrado' });
   }
 });
 

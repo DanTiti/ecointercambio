@@ -20,16 +20,16 @@
         
         <div class="dropdown">
           <button class="dropbtn" id="menuBtn"><i class="fas fa-bars"></i></button>
-            <div class="dropdown-content" id="myDropdown">
-                <a href="sugerencias.html"><i class="fas fa-lightbulb"></i> Sugerencias</a>
-                <a href="mis-publicaciones.html"><i class="fas fa-folder-open"></i> Mis publicaciones</a>
-                <a href="historial.html"><i class="fas fa-history"></i> Historial</a>
-                <a href="lista-chat.html"><i class="fas fa-comments"></i> Chats <span id="notif"></span></a>
-                <hr>
-                <a href="#" onclick="localStorage.clear(); location.href='login.html'" style="color: #d32f2f;">
-                    <i class="fas fa-sign-out-alt"></i> Salir
-                </a>
-            </div>
+          <div class="dropdown-content" id="myDropdown">
+            <a href="sugerencias.html"><i class="fas fa-lightbulb"></i> Sugerencias</a>
+            <a href="mis-publicaciones.html"><i class="fas fa-folder-open"></i> Mis publicaciones</a>
+            <a href="historial.html"><i class="fas fa-history"></i> Historial</a>
+            <a href="lista-chat.html"><i class="fas fa-comments"></i> Chats <span id="notif"></span></a>
+            <hr>
+            <a href="#" onclick="confirmarCerrarSesion()" style="color: #d32f2f;">
+                <i class="fas fa-sign-out-alt"></i> Salir
+            </a>
+          </div>
         </div>
       </div>
     </div>
@@ -37,14 +37,31 @@
 
   <div class="content-wrapper">
     <div class="container">
-      <div class="section-header" style="text-align: center; margin-bottom: 40px;">
-        <i class="fas fa-folder-open" style="font-size: 2.5rem; color: #1e88e5; margin-bottom: 15px;"></i>
-        <h2 style="margin: 0; color: #333;">Mis publicaciones</h2>
-        <p style="color: #666; margin-top: 5px;">Gestiona los útiles que tienes activos para intercambio.</p>
+      <div id="statusMsg" class="error-container" style="margin-bottom: 20px; display: none;">
+          <i id="statusIcon" class="fas fa-check-circle"></i>
+          <span id="statusText"></span>
+      </div>
+
+      <div class="section-header" id="headerInfo" style="text-align: center; margin-bottom: 40px;">
+          <i class="fas fa-folder-open" style="font-size: 2.5rem; color: #1e88e5; margin-bottom: 15px;"></i>
+          <h2 style="margin: 0; color: #333;">Mis publicaciones</h2>
+          <p style="color: #666; margin-top: 5px;">Gestiona los útiles que tienes activos para intercambio.</p>
       </div>
 
       <div id="misPublicaciones" class="grid-productos"></div>
     </div>
+  </div>
+
+  <div id="modalConfirm" class="modal-confirmacion" style="display: none;">
+      <div class="modal-confirm-content">
+          <i id="modalIcon" class="fas fa-exclamation-triangle" style="font-size: 3rem; color: #ef4444; margin-bottom: 15px;"></i>
+          <h3 id="modalTitle">¿Estás seguro?</h3>
+          <p id="modalText">Esta acción no se puede deshacer.</p>
+          <div class="modal-confirm-btns">
+              <button onclick="cerrarModal()" style="background: #e5e7eb; color: #374151; flex: 1; border: none; padding: 10px; border-radius: 8px; cursor: pointer;">Cancelar</button>
+              <button id="btnConfirmarAccion" style="background: #ef4444; color: white; flex: 1; border: none; padding: 10px; border-radius: 8px; cursor: pointer; font-weight: bold;">Confirmar</button>
+          </div>
+      </div>
   </div>
 
   <footer class="main-footer">
@@ -65,8 +82,10 @@
         .then(res => res.json())
         .then(productos => {
           const contenedor = document.getElementById('misPublicaciones');
+          const headerInfo = document.getElementById('headerInfo');
           
           if (!Array.isArray(productos) || productos.length === 0) {
+            headerInfo.style.display = 'block';
             contenedor.innerHTML = `
               <div style="grid-column: 1/-1; text-align: center; padding: 60px 20px;">
                 <i class="fas fa-box-open fa-4x" style="color: #d1d5db; margin-bottom: 20px;"></i>
@@ -80,10 +99,12 @@
             return;
           }
 
+          headerInfo.style.display = 'none';
+
           contenedor.innerHTML = productos.map(p => `
-            <div class="producto" id="producto-${p.id}">
+            <div class="producto" id="producto-${p.id}" style="position: relative;">
               <div class="producto-eliminar">
-                <button class="eliminar" onclick="eliminarProducto(${p.id})">
+                <button class="eliminar" onclick="prepararEliminar(${p.id})" title="Eliminar publicación">
                   <i class="fas fa-trash"></i>
                 </button>
               </div>
@@ -94,8 +115,8 @@
                   <i class="fas fa-search" style="color: #1e88e5;"></i> Busca: <b>${p.busca}</b>
                 </p>
                 <div style="margin-top: 15px;">
-                  <button class="btn-send" onclick="marcarIntercambiado(${p.id})" style="width: 100%; padding: 10px; background-color: #4caf50;">
-                    <i class="fas fa-check-circle"></i> Marcar Intercambiado
+                  <button class="btn-send" onclick="prepararIntercambio(${p.id})" style="width: 100%; padding: 10px; background-color: #4caf50; border: none; color: white; border-radius: 8px; cursor: pointer; font-weight: bold;">
+                    Marcar Intercambiado
                   </button>
                 </div>
               </div>
@@ -104,28 +125,78 @@
         });
     }
 
-    async function eliminarProducto(id) {
-      if (!confirm("¿Seguro que deseas eliminar esta publicación?")) return;
+    function mostrarStatus(mensaje, tipo) {
+      const statusMsg = document.getElementById('statusMsg');
+      const statusText = document.getElementById('statusText');
+      const statusIcon = document.getElementById('statusIcon');
+
+      statusMsg.style.display = 'flex';
+      statusText.innerText = mensaje;
+      
+      if (tipo === "success") {
+        statusMsg.style.backgroundColor = '#dcfce7';
+        statusMsg.style.color = '#16a34a';
+        statusIcon.className = "fas fa-check-circle";
+      } else {
+        statusMsg.style.backgroundColor = '#fee2e2';
+        statusMsg.style.color = '#dc2626';
+        statusIcon.className = "fas fa-exclamation-circle";
+      }
+      
+      setTimeout(() => { statusMsg.style.display = 'none'; }, 4000);
+    }
+
+    function cerrarModal() {
+      document.getElementById('modalConfirm').style.display = 'none';
+      accionPendiente = null;
+    }
+
+    function abrirModal(titulo, texto, colorBtn, icono) {
+      document.getElementById('modalTitle').innerText = titulo;
+      document.getElementById('modalText').innerText = texto;
+      document.getElementById('modalIcon').className = `fas ${icono}`;
+      document.getElementById('modalIcon').style.color = colorBtn;
+      document.getElementById('btnConfirmarAccion').style.backgroundColor = colorBtn;
+      document.getElementById('modalConfirm').style.display = 'flex';
+    }
+
+    function prepararEliminar(id) {
+      abrirModal("¿Eliminar publicación?", "Esta acción quitará el artículo de la lista definitivamente.", "#ef4444", "fa-trash-alt");
+      accionPendiente = () => ejecutarEliminar(id);
+    }
+
+    async function ejecutarEliminar(id) {
       try {
         const res = await fetch(`https://ecointercambio-backend-0ts7.onrender.com/api/productos/${id}`, {
           method: 'DELETE',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ userId })
         });
-        if (res.ok) document.getElementById(`producto-${id}`).remove();
-      } catch (err) { alert('Error de conexión'); }
+        if (res.ok) {
+          document.getElementById(`producto-${id}`).remove();
+          mostrarStatus("Publicación eliminada correctamente", "success");
+          cargarPublicaciones();
+        }
+      } catch (err) { mostrarStatus("Error al conectar con el servidor", "error"); }
+      cerrarModal();
     }
 
-    function marcarIntercambiado(id) {
-      if (!confirm("¿Confirmas que este producto ya fue intercambiado?")) return;
-      fetch(`https://ecointercambio-backend-0ts7.onrender.com/api/productos/marcar-intercambiado/${id}`, {
-        method: 'PUT'
-      })
-      .then(() => {
-        document.getElementById(`producto-${id}`).remove();
-        alert("¡Felicidades por tu intercambio!");
-      });
+    function prepararIntercambio(id) {
+      abrirModal("¿Confirmar Intercambio?", "Se marcará como completado y se quitará de la vista pública.", "#4caf50", "fa-handshake");
+      accionPendiente = () => ejecutarIntercambio(id);
     }
+
+    async function ejecutarIntercambio(id) {
+      try {
+        await fetch(`https://ecointercambio-backend-0ts7.onrender.com/api/productos/marcar-intercambiado/${id}`, { method: 'PUT' });
+        document.getElementById(`producto-${id}`).remove();
+        mostrarStatus("¡Felicidades por tu intercambio!", "success");
+        cargarPublicaciones();
+      } catch (err) { mostrarStatus("Error al actualizar producto", "error"); }
+      cerrarModal();
+    }
+
+    document.getElementById('btnConfirmarAccion').onclick = () => { if(accionPendiente) accionPendiente(); };
 
     cargarPublicaciones();
   </script>

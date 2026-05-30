@@ -2,22 +2,34 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8">
-  <title>Registro</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ReÚtiles - Registro</title>
   <link rel="stylesheet" href="css/styles.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 </head>
 <body>
-    <div class="navbar">
-        <h1>ReÙtiles</h1>
+  <div class="navbar">
+    <div class="nav-container">
+      <div class="logo-container">
+        <h1>ReÚtiles</h1>
+      </div>
     </div>
+  </div>
 
   <div class="wrapper">
     <div class="container-inigistro">
-      <h2>Registro</h2>
+      <h2>Crear Cuenta</h2>
+      
+      <div id="statusMsg" class="error-container">
+        <i id="statusIcon" class="fas fa-exclamation-circle"></i>
+        <span id="statusText"></span>
+      </div>
+
       <form id="registerForm">
         <input type="text" name="nickname" placeholder="Nombre de usuario" required>
         <input type="email" name="email" placeholder="Correo electrónico" required>
         <input type="password" name="password" placeholder="Contraseña" required>
-        <button type="submit">Registrar</button>
+        <button type="submit" id="registerBtn">Registrar</button>
       </form>
 
       <div class="link">
@@ -26,25 +38,60 @@
     </div>
   </div>
 
-<script>
-  document.getElementById('registerForm').addEventListener('submit', async (e) => {
-    e.preventDefault();
-    const form = e.target;
-    const nickname = form.nickname.value;
-    const email = form.email.value;
-    const password = form.password.value;
+  <script>
+    document.getElementById('registerForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      
+      const statusMsg = document.getElementById('statusMsg');
+      const statusText = document.getElementById('statusText');
+      const statusIcon = document.getElementById('statusIcon');
+      const registerBtn = document.getElementById('registerBtn');
+      
+      registerBtn.innerText = "Procesando...";
+      registerBtn.disabled = true;
+      statusMsg.style.display = 'none';
+      statusMsg.style.backgroundColor = '#fee2e2';
+      statusMsg.style.color = '#dc2626';
 
-    const res = await fetch('https://ecointercambio-backend-0ts7.onrender.com/api/auth/register', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ nickname, email, password })
+      const form = e.target;
+      const nickname = form.nickname.value;
+      const email = form.email.value;
+      const password = form.password.value;
+
+      try {
+        const res = await fetch('https://ecointercambio-backend-0ts7.onrender.com/api/auth/register', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ nickname, email, password })
+        });
+
+        const data = await res.json();
+
+        if (res.ok) {
+          statusMsg.style.backgroundColor = '#dcfce7'; 
+          statusMsg.style.color = '#16a34a';
+          statusMsg.style.borderColor = '#bbf7d0';
+          statusIcon.className = "fas fa-check-circle";
+          statusText.innerText = "¡Registro exitoso! Redirigiendo...";
+          statusMsg.style.display = 'flex';
+          
+          setTimeout(() => {
+            window.location.href = "login.html";
+          }, 2000);
+        } else {
+          // Error: Mostramos el error específico del backend (ej: "El correo ya existe")
+          statusText.innerText = data.error || data.message || "Error al registrar";
+          statusMsg.style.display = 'flex';
+          registerBtn.innerText = "Registrar";
+          registerBtn.disabled = false;
+        }
+      } catch (err) {
+        statusText.innerText = "Error de conexión con el servidor";
+        statusMsg.style.display = 'flex';
+        registerBtn.innerText = "Registrar";
+        registerBtn.disabled = false;
+      }
     });
-
-    const data = await res.json();
-    alert(data.message);
-    if (res.ok) window.location.href = "login.html";
-  });
-</script>
-
+  </script>
 </body>
 </html>
