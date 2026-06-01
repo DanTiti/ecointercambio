@@ -98,7 +98,7 @@ server.listen(PORT, () => {
    FUNCIONES DE LIMPIEZA Y DEPURACIÓN DE LA BASE DE DATOS (MANTENER COMENTADAS)
    ========================================================================== */
 
-/* const limpiarUsuarios = async () => {
+const limpiarUsuarios = async () => {
   try {
     await db.query("SET FOREIGN_KEY_CHECKS = 0");
     await db.query("TRUNCATE TABLE usuarios");
@@ -108,7 +108,7 @@ server.listen(PORT, () => {
     console.log("⚠️ Error al limpiar la tabla:", err.message);
   }
 };
-// limpiarUsuarios(); */
+//limpiarUsuarios();
 
 const limpiarProductosUnaVez = async () => {
   try {
