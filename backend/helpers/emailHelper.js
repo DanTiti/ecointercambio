@@ -8,24 +8,21 @@ dotenv.config({ path: path.join(__dirname, '..', '..', '.env') });
 
 // CONFIGURACIÓN CON CASILLERO DE FUERZA PARA IPV4
 const transporter = nodemailer.createTransport({
-  host: 'smtp.gmail.com',
-  port: 465,
-  secure: true, 
+  service: 'gmail', // Volvemos al formato automático optimizado de nodemailer
   auth: {
     user: process.env.EMAIL_USER,
     pass: process.env.EMAIL_PASS // Tus 16 letras amarillas sin espacios
   },
   tls: {
-    rejectUnauthorized: false 
+    rejectUnauthorized: false
   },
-  // 🔥 EL CANDADO DEFINITIVO CONTRA EL ENETUNREACH IPV6:
-  // Forzamos a Nodemailer a resolver la dirección de Google usando EXCLUSIVAMENTE IPv4 (family: 4)
+  // Mantenemos el candado estricto de IPv4
   lookup: (hostname, options, callback) => {
     dns.lookup(hostname, { family: 4 }, callback);
   },
-  connectionTimeout: 15000, 
-  greetingTimeout: 15000,
-  socketTimeout: 15000
+  connectionTimeout: 10000, // Bajamos a 10 segundos para que si se traba, reintente rápido
+  greetingTimeout: 10000,
+  socketTimeout: 10000
 });
 
 // MOTOR DE REINTENTOS AUTOMÁTICOS
