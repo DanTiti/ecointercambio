@@ -3,26 +3,29 @@ const path = require('path');
 const dotenv = require('dotenv');
 const dns = require('dns'); 
 
-// Forzamos IPv4 global
+// 1. Candado global
 dns.setDefaultResultOrder('ipv4first');
 
-// Configuración de dotenv
 dotenv.config({ path: path.join(__dirname, '..', '..', '.env') });
 
-// 🔥 CORREGIDO: Función para generar un transporte limpio y fresco en cada petición
-// Esto evita que Render use sockets obsoletos o congelados del arranque
+// 🔥 2. CREACIÓN DEL TRANSPORTE (Forzado absoluto a IPv4)
 const crearTransporterFresco = () => {
   return nodemailer.createTransport({
-    service: 'gmail',
+    host: 'smtp.gmail.com', // ⚠️ IMPORTANTE: No usar service: 'gmail'
+    port: 465,
+    secure: true,
     auth: {
       user: process.env.EMAIL_USER,
-      pass: process.env.EMAIL_PASS // Tus 16 letras amarillas sin espacios
+      pass: process.env.EMAIL_PASS 
     },
     tls: {
       rejectUnauthorized: false 
     },
+    // El candado definitivo: obligamos a Node a devolver un arreglo IPv4 puro
     lookup: (hostname, options, callback) => {
-      dns.lookup(hostname, { family: 4 }, callback);
+      dns.lookup(hostname, { family: 4 }, (err, address, family) => {
+        callback(err, address, family);
+      });
     },
     connectionTimeout: 15000, 
     greetingTimeout: 15000,
@@ -32,7 +35,6 @@ const crearTransporterFresco = () => {
 
 // MOTOR DE REINTENTOS AUTOMÁTICOS
 const enviarCorreoConReintentos = async (mailOptions, intentosMaximos = 3) => {
-  // Instanciamos el transporte justo antes de enviar
   const transporter = crearTransporterFresco();
 
   for (let intento = 1; intento <= intentosMaximos; intento++) {

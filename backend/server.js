@@ -110,7 +110,7 @@ const limpiarUsuarios = async () => {
     console.log("⚠️ Error al limpiar la tabla:", err.message);
   }
 };
-limpiarUsuarios();
+//limpiarUsuarios();
 
 const limpiarProductosUnaVez = async () => {
   try {
