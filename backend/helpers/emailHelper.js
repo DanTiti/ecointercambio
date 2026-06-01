@@ -1,23 +1,26 @@
 const nodemailer = require('nodemailer');
-const path = require('path'); // <-- AGREGAMOS ESTO
+const path = require('path'); 
 const dotenv = require('dotenv');
 
-// 🔥 CORREGIDO: Esto sube dos niveles desde backend/helpers/ para llegar al .env en la raíz de ecointercambio
+// Configuración de dotenv para desarrollo local
 dotenv.config({ path: path.join(__dirname, '..', '..', '.env') });
 
-// Configuración del transporte de Nodemailer usando Gmail
+// Configuración directa y segura para Gmail en producción
 const transporter = nodemailer.createTransport({
-  service: 'gmail',
+  host: 'smtp.gmail.com',
+  port: 465,
+  secure: true, // Usa SSL/TLS obligatorio para producción
   auth: {
     user: process.env.EMAIL_USER,
-    pass: process.env.EMAIL_PASS // Aquí van las 16 letras amarillas de tu .env
+    pass: process.env.EMAIL_PASS // Las 16 letras de la contraseña de aplicación
   }
 });
 
 // Función para enviar el correo de verificación
 const sendVerificationEmail = async (email, nickname, token) => {
-  // Enlace local (luego lo cambiaremos para que use Render en producción)
-  const urlVerificacion = `http://localhost:25244/api/auth/verify?token=${token}`;
+  // RED DE SEGURIDAD: Si estás en Render usa la URL de Render, si no, usa localhost
+  const backendURL = process.env.BACKEND_URL || 'https://ecointercambio-backend-0ts7.onrender.com';
+  const urlVerificacion = `${backendURL}/api/auth/verify?token=${token}`;
 
   const mailOptions = {
     from: `"ReÚtiles" <${process.env.EMAIL_USER}>`,
@@ -41,9 +44,9 @@ const sendVerificationEmail = async (email, nickname, token) => {
 
 // Función para enviar el correo de recuperación de contraseña
 const sendResetPasswordEmail = async (email, token) => {
-  // Enlace que llevará al usuario a tu pantalla HTML de cambiar contraseña
-  // Usamos la FRONTEND_URL de tu Live Server (ej: http://127.0.0.1:5500)
-  const urlReset = `${process.env.FRONTEND_URL}/reset-password.html?token=${token}`;
+  // RED DE SEGURIDAD: Si estás en Render usa tu frontend en línea, si no, usa el Live Server local
+  const frontendURL = process.env.FRONTEND_URL || 'https://reutiles.onrender.com';
+  const urlReset = `${frontendURL}/reset-password.html?token=${token}`;
 
   const mailOptions = {
     from: `"ReÚtiles" <${process.env.EMAIL_USER}>`,
