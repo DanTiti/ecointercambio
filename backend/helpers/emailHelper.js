@@ -1,24 +1,28 @@
 const nodemailer = require('nodemailer');
 const path = require('path'); 
 const dotenv = require('dotenv');
+const dns = require('dns'); // <--- 1. IMPORTAMOS EL MÓDULO DNS DE NODE
+
+// 🔥 2. PARCHE CRÍTICO PARA RENDER (Soluciona ENETUNREACH)
+// Fuerza a Node.js a priorizar IPv4 sobre IPv6 para que no intente usar la red bloqueada de Render
+dns.setDefaultResultOrder('ipv4first');
 
 // Configuración de dotenv para desarrollo local
 dotenv.config({ path: path.join(__dirname, '..', '..', '.env') });
 
-// CONFIGURACIÓN INMUNE A BLOQUEOS EN LA NUBE (Puerto 587 + Bypass TLS)
+// Configuración robusta por puerto 587
 const transporter = nodemailer.createTransport({
   host: 'smtp.gmail.com',
   port: 587,
-  secure: false, // false porque el puerto 587 usa STARTTLS, no SSL directo
+  secure: false, // false porque el puerto 587 usa STARTTLS
   auth: {
     user: process.env.EMAIL_USER,
-    pass: process.env.EMAIL_PASS // Tus 16 letras sin espacios
+    pass: process.env.EMAIL_PASS // Tus 16 letras amarillas sin espacios
   },
   tls: {
-    // CLAVE PARA RENDER: Evita que el contenedor de la nube congele la conexión por temas de certificados locales
-    rejectUnauthorized: false 
+    rejectUnauthorized: false // Evita bloqueos de certificados en el contenedor
   },
-  connectionTimeout: 15000, // Le damos 15 segundos de tolerancia para el handshake
+  connectionTimeout: 15000,
   greetingTimeout: 15000,
   socketTimeout: 15000
 });
