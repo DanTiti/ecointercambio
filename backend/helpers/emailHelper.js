@@ -1,26 +1,42 @@
-// 🔥 LA REGLA DE ORO PARA RENDER Y NODE 22: Obliga a usar IPv4 y evita el ENETUNREACH
-require('dns').setDefaultResultOrder('ipv4first');
-
 const nodemailer = require('nodemailer');
 const path = require('path'); 
 const dotenv = require('dotenv');
+const dns = require('dns'); 
 
-// Configuración de dotenv
+// 1. Candado global
+dns.setDefaultResultOrder('ipv4first');
+
 dotenv.config({ path: path.join(__dirname, '..', '..', '.env') });
 
-// Configuración limpia pero con el host explícito (sin el service: 'gmail' que a veces ignora la regla DNS)
-const transporter = nodemailer.createTransport({
-  host: 'smtp.gmail.com',
-  port: 465,
-  secure: true,
-  auth: {
-    user: process.env.EMAIL_USER,
-    pass: process.env.EMAIL_PASS 
-  }
-});
+// 🔥 2. CREACIÓN DEL TRANSPORTE BINDADO (El que ya comprobamos que funciona)
+const crearTransporterFresco = () => {
+  return nodemailer.createTransport({
+    host: 'smtp.gmail.com', // ⚠️ IMPORTANTE: No usar service: 'gmail'
+    port: 465,
+    secure: true,
+    auth: {
+      user: process.env.EMAIL_USER,
+      pass: process.env.EMAIL_PASS 
+    },
+    tls: {
+      rejectUnauthorized: false 
+    },
+    // El candado definitivo: obligamos a Node a devolver un arreglo IPv4 puro
+    lookup: (hostname, options, callback) => {
+      dns.lookup(hostname, { family: 4 }, (err, address, family) => {
+        callback(err, address, family);
+      });
+    },
+    connectionTimeout: 15000, 
+    greetingTimeout: 15000,
+    socketTimeout: 15000
+  });
+};
 
 // MOTOR DE REINTENTOS AUTOMÁTICOS
 const enviarCorreoConReintentos = async (mailOptions, intentosMaximos = 3) => {
+  const transporter = crearTransporterFresco();
+
   for (let intento = 1; intento <= intentosMaximos; intento++) {
     try {
       console.log(`✉️ Intentando despachar correo (Intento ${intento} de ${intentosMaximos})...`);
@@ -42,7 +58,8 @@ const enviarCorreoConReintentos = async (mailOptions, intentosMaximos = 3) => {
 
 // Función para enviar el correo de verificación (Para Ngrok / Laptop)
 const sendVerificationEmail = async (email, nickname, token) => {
-  const backendURL = process.env.BACKEND_URL || 'https://ecointercambio-backend-0ts7.onrender.com';
+  // Ponemos Ngrok como respaldo por si acaso falla tu .env local
+  const backendURL = process.env.BACKEND_URL || 'https://override-affluent-purgatory.ngrok-free.dev';
   const urlVerificacion = `${backendURL}/api/auth/verify?token=${token}`;
 
   const mailOptions = {
@@ -57,7 +74,6 @@ const sendVerificationEmail = async (email, nickname, token) => {
         <div style="text-align: center; margin: 30px 0;">
           <a href="${urlVerificacion}" style="background-color: #16a34a; color: white; padding: 12px 25px; text-decoration: none; border-radius: 5px; font-weight: bold;">Verificar mi cuenta</a>
         </div>
-        <p style="font-size: 12px; color: #666; text-align: center;">Si el botón no funciona, copia y pega este enlace en tu navegador:<br>${urlVerificacion}</p>
       </div>
     `
   };
@@ -65,7 +81,7 @@ const sendVerificationEmail = async (email, nickname, token) => {
   await enviarCorreoConReintentos(mailOptions);
 };
 
-// Función para enviar el correo de recuperación (Para Render / Nube)
+// Función para enviar el correo de recuperación de contraseña (Para Render / Nube)
 const sendResetPasswordEmail = async (email, token) => {
   const frontendURL = process.env.FRONTEND_URL || 'https://reutiles.onrender.com';
   const urlReset = `${frontendURL}/reset-password.html?token=${token}`;
@@ -82,7 +98,6 @@ const sendResetPasswordEmail = async (email, token) => {
         <div style="text-align: center; margin: 30px 0;">
             <a href="${urlReset}" style="background-color: #2563eb; color: white; padding: 12px 25px; text-decoration: none; border-radius: 5px; font-weight: bold;">Restablecer Contraseña</a>
         </div>
-        <p style="font-size: 12px; color: #666; text-align: center;">Si no solicitaste este cambio, puedes ignorar este correo de forma segura.</p>
         </div>
     `
   };
