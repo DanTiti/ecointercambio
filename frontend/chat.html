@@ -7,6 +7,8 @@
   <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
   <link rel="stylesheet" href="css/styles.css">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+  <!-- CDN de SweetAlert2 -->
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 </head>
 <body>
 
@@ -19,7 +21,6 @@
       <div class="nav-main-actions">
         <button onclick="location.href='dashboard.html'"><i class="fas fa-plus"></i>Publicar</button>
         <button onclick="location.href='coincidencias.html'"><i class="fas fa-handshake"></i> Coincidencias</button>
-        
         <div class="dropdown">
           <button class="dropbtn" id="menuBtn"><i class="fas fa-bars"></i></button>
             <div class="dropdown-content" id="myDropdown">
@@ -28,9 +29,7 @@
                 <a href="historial.html"><i class="fas fa-history"></i> Historial</a>
                 <a href="lista-chat.html"><i class="fas fa-comments"></i> Chats <span id="notif"></span></a>
                 <hr>
-                <a href="#" onclick="confirmarCerrarSesion()" style="color: #d32f2f;">
-                    <i class="fas fa-sign-out-alt"></i> Salir
-                </a>
+                <a href="#" onclick="confirmarCerrarSesion()" style="color: #d32f2f;"><i class="fas fa-sign-out-alt"></i> Salir</a>
             </div>
         </div>
       </div>
@@ -45,29 +44,75 @@
           <h2>Chat con <span id="nombreReceptor"></span></h2>
         </div>
         
+        <!-- PANEL DE PROPUESTA -->
+        <div id="panelPropuesta" style="display: none; background: #fffbea; border: 1px solid #ffd54f; padding: 15px; border-radius: 8px; margin-bottom: 20px; text-align: center;">
+            <p id="txtPropuesta" style="margin: 0 0 15px 0; color: #856404; font-size: 1.1rem; font-weight: bold;"></p>
+            <button id="btnAceptar" onclick="aceptarPropuesta()" style="background: #28a745; color: white; border: none; padding: 12px 20px; border-radius: 6px; font-weight: bold; cursor: pointer; font-size: 1rem; width: 100%;">
+                <i class="fas fa-check-circle" style="margin-right: 8px;"></i> Sí, aceptar intercambio
+            </button>
+        </div>
+
+        <!-- PANEL DE ESPERA -->
+        <div id="panelEspera" style="display: none; background: #f3f4f6; border: 1px solid #d1d5db; padding: 15px; border-radius: 8px; margin-bottom: 20px; text-align: center; color: #4b5563; font-style: italic;">
+            <i class="fas fa-clock"></i> Esperando a que el otro usuario acepte tu propuesta para poder iniciar el chat...
+        </div>
+
+        <!-- PANEL DE CONFIRMACIÓN FINAL -->
+        <div id="panelConfirmacion" style="display: none; background: #f0fdf4; border: 1px solid #bbf7d0; padding: 15px; border-radius: 8px; margin-bottom: 20px;">
+          <div style="display: flex; justify-content: space-between; align-items: center; gap: 15px; width: 100%;">
+            <div style="flex: 1;">
+              <h4 style="margin: 0; color: #166534; font-size: 0.95rem;"><i class="fas fa-handshake"></i> Intercambio Aceptado</h4>
+              <p id="txtEstadoEntrega" style="margin: 4px 0 0 0; font-size: 0.8rem; color: #15803d;">Ya pueden chatear. Presiona el botón cuando entregues el artículo en persona.</p>
+            </div>
+            <button id="btnConfirmarTrato" onclick="enviarConfirmacionFinal()" style="background: #16a34a; color: white; border: none; padding: 10px 15px; border-radius: 6px; font-weight: bold; cursor: pointer; font-size: 0.85rem; white-space: nowrap;">
+              Confirmar Entrega
+            </button>
+          </div>
+        </div>
+
         <div id="mensajes" class="mensajes"></div>
         
-        <form id="formChat" class="form-chat">
+        <!-- FORMULARIO DE CHAT -->
+        <form id="formChat" class="form-chat" style="display: none;">
           <textarea id="textoMensaje" placeholder="Escribe tu mensaje..." required></textarea>
-          <button type="submit" class="btn-send">
-            <i class="fas fa-paper-plane"></i> Enviar
-          </button>
+          <button type="submit" class="btn-send"><i class="fas fa-paper-plane"></i> Enviar</button>
         </form>
       </div>
     </div>
   </div>
 
-  <footer class="main-footer">
-    <p>&copy; <span id="year"></span> ReÚtiles - Proyecto Escolar</p>
-  </footer>
+  <!-- MODAL DE CALIFICACIÓN -->
+  <div id="modalCalificacion" style="display: none; position: fixed; z-index: 2000; left: 0; top: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); align-items: center; justify-content: center;">
+    <div style="background: white; padding: 30px; border-radius: 10px; text-align: center; max-width: 350px; width: 90%; box-shadow: 0 4px 15px rgba(0,0,0,0.3);">
+      <h3 style="margin-top: 0; color: #333;">¡Trato Hecho! 🎉</h3>
+      <p style="color: #666; font-size: 0.9rem;">¿Cómo calificarías tu experiencia de intercambio con este usuario?</p>
+      
+      <div class="estrellas-container" style="font-size: 2.2rem; color: #ccc; margin: 20px 0; display: flex; justify-content: center; gap: 10px;">
+        <i class="fas fa-star estrella-voto" data-valor="1" style="cursor: pointer;"></i>
+        <i class="fas fa-star estrella-voto" data-valor="2" style="cursor: pointer;"></i>
+        <i class="fas fa-star estrella-voto" data-valor="3" style="cursor: pointer;"></i>
+        <i class="fas fa-star estrella-voto" data-valor="4" style="cursor: pointer;"></i>
+        <i class="fas fa-star estrella-voto" data-valor="5" style="cursor: pointer;"></i>
+      </div>
+      
+      <input type="hidden" id="idTransaccionGuardada">
+      <button onclick="guardarVotoEstrellas()" style="background: #1e88e5; color: white; border: none; padding: 12px 20px; border-radius: 6px; font-weight: bold; cursor: pointer; width: 100%; font-size: 1rem;">
+        Enviar Calificación
+      </button>
+    </div>
+  </div>
 
   <script src="js/menu.js"></script>
-
   <script>
     const socket = io('https://ecointercambio-backend-0ts7.onrender.com');
     const userId = localStorage.getItem('userId');
     const contactoId = localStorage.getItem('contactoId');
     const contactoNombre = localStorage.getItem('contactoNombre') || 'usuario desconocido';
+    let productoId = localStorage.getItem('currentProductId'); 
+    const backendURL = window.location.hostname === '127.0.0.1' || window.location.hostname === 'localhost'
+      ? 'http://127.0.0.1:25244' 
+      : 'https://ecointercambio-backend-0ts7.onrender.com';
+    let estrellaSeleccionada = 0;
 
     if (!userId || !contactoId) location.href = 'inicio.html';
     document.getElementById('nombreReceptor').innerText = contactoNombre;
@@ -75,34 +120,131 @@
     const mensajesDiv = document.getElementById('mensajes');
     const textoMensaje = document.getElementById('textoMensaje');
     const formChat = document.getElementById('formChat');
-    const notifSpan = document.getElementById('notif');
 
-    function actualizarContadorGlobal() {
-      fetch(`https://ecointercambio-backend-0ts7.onrender.com/api/mensajes/no-leidos/${userId}`)
-        .then(res => res.json())
-        .then(data => {
-          const chatsDeOtros = data.filter(item => item.de_usuario != contactoId);
-          const totalChatsNuevos = chatsDeOtros.length;
+    // ==============================================
+    // LÓGICA DE BLOQUEO Y ESTADOS
+    // ==============================================
+    async function verificarEstadoDelTrato() {
+      try {
+        const res = await fetch(`${backendURL}/api/transacciones/estado-propuesta-chat/${userId}/${contactoId}`);
+        if (!res.ok) return;
+        const data = await res.json();
 
-          if (totalChatsNuevos > 0) {
-            notifSpan.innerText = ` (${totalChatsNuevos})`;
-            notifSpan.style.color = "red";
-          } else {
-            notifSpan.innerText = '';
+        if (data.producto_id) {
+            productoId = data.producto_id;
+        }
+        
+        if (data.status === 'completado_pendiente_calificar') {
+          document.getElementById('idTransaccionGuardada').value = data.transaccion_id;
+          document.getElementById('modalCalificacion').style.display = 'flex';
+          return;
+        }
+
+        if (data.status === 'propuesta_pendiente') {
+            formChat.style.display = 'none';
+
+            if (data.es_receptor) {
+                document.getElementById('panelPropuesta').style.display = 'block';
+                document.getElementById('txtPropuesta').innerText = `${data.proponente} quiere intercambiar contigo: ${data.producto_ofrecido}`;
+            } else {
+                document.getElementById('panelEspera').style.display = 'block';
+            }
+        } 
+        else if (data.status === 'aceptado' || data.status === 'pendiente') {
+            formChat.style.display = 'flex'; 
+            document.getElementById('panelConfirmacion').style.display = 'block';
+
+            if (data.mi_confirmacion === 1) {
+                const btn = document.getElementById('btnConfirmarTrato');
+                btn.style.background = '#9ca3af';
+                btn.innerText = "✓ Esperando confirmación";
+                btn.disabled = true;
+                document.getElementById('txtEstadoEntrega').innerText = "Ya marcaste como entregado. Falta que la otra persona confirme.";
+            }
+        }
+      } catch (err) {
+        console.error("Error al verificar estado:", err);
+      }
+    }
+
+    async function aceptarPropuesta() {
+      if (!productoId) return Swal.fire('Error', 'No se identificó el producto.', 'error');
+      
+      const result = await Swal.fire({
+          title: '¿Aceptar intercambio?',
+          text: "Al aceptar, el trato quedará formalizado y podrán iniciar el chat.",
+          icon: 'question',
+          showCancelButton: true,
+          confirmButtonColor: '#28a745',
+          cancelButtonColor: '#d33',
+          confirmButtonText: 'Sí, aceptar',
+          cancelButtonText: 'Cancelar'
+      });
+
+      if (result.isConfirmed) {
+          try {
+            await fetch(`${backendURL}/api/transacciones/aceptar`, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ producto_id: productoId })
+            });
+            Swal.fire('¡Genial!', 'Intercambio aceptado con éxito.', 'success').then(() => {
+                location.reload(); 
+            });
+          } catch (err) { 
+            Swal.fire('Error', 'Hubo un problema al procesar la solicitud.', 'error');
           }
-        });
+      }
     }
 
-    function marcarMensajesComoLeidos() {
-      fetch(`https://ecointercambio-backend-0ts7.onrender.com/api/mensajes/marcar-leidos`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ de_usuario: contactoId, para_usuario: userId })
-      })
-      .then(() => actualizarContadorGlobal());
+    async function enviarConfirmacionFinal() {
+      const result = await Swal.fire({
+          title: '¿Confirmar entrega?',
+          text: "Esto marcará el intercambio como entregado. ¡Asegúrate de estar frente a frente o haber recibido tu artículo!",
+          icon: 'warning',
+          showCancelButton: true,
+          confirmButtonColor: '#16a34a',
+          cancelButtonColor: '#d33',
+          confirmButtonText: 'Sí, confirmar entrega',
+          cancelButtonText: 'Aún no'
+      });
+
+      if (result.isConfirmed) {
+          const btn = document.getElementById('btnConfirmarTrato');
+          btn.disabled = true;
+          btn.innerText = "Procesando...";
+
+          try {
+            const res = await fetch(`${backendURL}/api/transacciones/confirmar`, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ producto_id: productoId, usuario_id: userId })
+            });
+            const data = await res.json();
+
+            if (data.status === 'completado') {
+              // AQUÍ ELIMINAMOS EL SWAL.FIRE PARA QUE NO CHOQUE CON EL MODAL
+              document.getElementById('idTransaccionGuardada').value = data.transaccion_id;
+              document.getElementById('panelConfirmacion').style.display = 'none';
+              document.getElementById('modalCalificacion').style.display = 'flex';
+            } else {
+              Swal.fire('Registrado', 'Esperando a que la otra persona también confirme la entrega.', 'info');
+              btn.style.background = '#9ca3af';
+              btn.innerText = "✓ Esperando confirmación";
+              document.getElementById('txtEstadoEntrega').innerText = "Ya marcaste como entregado. Falta que la otra persona confirme.";
+            }
+          } catch (err) {
+            Swal.fire('Error', 'Problema al conectar con el servidor.', 'error');
+            btn.disabled = false;
+            btn.innerText = "Confirmar Entrega";
+          }
+      }
     }
 
-    fetch(`https://ecointercambio-backend-0ts7.onrender.com/api/mensajes/entre/${userId}/${contactoId}`)
+    // ==============================================
+    // LÓGICA DE CHAT ORIGINAL
+    // ==============================================
+    fetch(`${backendURL}/api/mensajes/entre/${userId}/${contactoId}`)
       .then(res => res.json())
       .then(mensajes => {
         mensajesDiv.innerHTML = '';
@@ -114,7 +256,7 @@
           mensajesDiv.appendChild(div);
         });
         mensajesDiv.scrollTop = mensajesDiv.scrollHeight;
-        marcarMensajesComoLeidos();
+        verificarEstadoDelTrato(); 
       });
 
     socket.on(`mensaje-${userId}`, (data) => {
@@ -124,9 +266,6 @@
         nuevo.innerHTML = `<b>${contactoNombre}:</b> ${data.mensaje}`;
         mensajesDiv.appendChild(nuevo);
         mensajesDiv.scrollTop = mensajesDiv.scrollHeight;
-        marcarMensajesComoLeidos();
-      } else {
-        actualizarContadorGlobal();
       }
     });
 
@@ -144,14 +283,45 @@
       textoMensaje.value = '';
     });
 
-    textoMensaje.addEventListener('keydown', (e) => {
-      if (e.key === 'Enter' && !e.shiftKey) {
-        e.preventDefault();
-        formChat.requestSubmit();
-      }
+    // ==============================================
+    // LÓGICA DE CALIFICACIÓN ORIGINAL
+    // ==============================================
+    document.querySelectorAll('.estrella-voto').forEach(estrella => {
+      estrella.addEventListener('click', (e) => {
+        estrellaSeleccionada = parseInt(e.target.getAttribute('data-valor'));
+        document.querySelectorAll('.estrella-voto').forEach(est => {
+          const val = parseInt(est.getAttribute('data-valor'));
+          est.style.color = val <= estrellaSeleccionada ? '#f59e0b' : '#ccc';
+        });
+      });
     });
 
-    actualizarContadorGlobal();
+    async function guardarVotoEstrellas() {
+      if (estrellaSeleccionada === 0) {
+        Swal.fire('Atención', 'Por favor selecciona al menos una estrella.', 'warning');
+        return;
+      }
+      const transaccionId = document.getElementById('idTransaccionGuardada').value;
+
+      try {
+        const res = await fetch(`${backendURL}/api/transacciones/calificar`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ transaccion_id: transaccionId, usuario_id: userId, estrellas: estrellaSeleccionada })
+        });
+        if (res.ok) { 
+            Swal.fire({
+                title: '¡Gracias!',
+                text: 'Tu calificación se ha guardado.',
+                icon: 'success',
+                timer: 1500,
+                showConfirmButton: false
+            }).then(() => {
+                location.href = 'historial.html'; 
+            });
+        }
+      } catch (err) { console.error(err); }
+    }
   </script>
 </body>
 </html>

@@ -58,8 +58,13 @@
       const email = form.email.value;
       const password = form.password.value;
 
+      const backendURL = window.location.hostname === '127.0.0.1' || window.location.hostname === 'localhost'
+        ? 'http://127.0.0.1:25244' 
+        : 'https://ecointercambio-backend-0ts7.onrender.com';
+
       try {
-        const res = await fetch('http://localhost:25244/api/auth/register', {
+        // Cambiado a 127.0.0.1 para evitar bloqueos estrictos de mapeo local en Chrome
+        const res = await fetch(`${backendURL}/api/auth/register`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ nickname, email, password })
@@ -72,12 +77,13 @@
           statusMsg.style.color = '#16a34a';
           statusMsg.style.borderColor = '#bbf7d0';
           statusIcon.className = "fas fa-check-circle";
-          statusText.innerText = "¡Registro exitoso! Redirigiendo...";
+          statusText.innerText = "¡Registro exitoso! Abriendo ventana de espera...";
           statusMsg.style.display = 'flex';
           
           setTimeout(() => {
-            window.location.href = "login.html";
-          }, 2000);
+            // 🚀 MODIFICADO PASO 4: Redirige a la pantalla de espera enviando el email seguro en la URL
+            window.location.href = `espera.html?email=${encodeURIComponent(email)}`;
+          }, 1500); // Bajado a 1.5 segundos para que el flujo se sienta más fluido
         } else {
           // Error: Mostramos el error específico del backend (ej: "El correo ya existe")
           statusText.innerText = data.error || data.message || "Error al registrar";

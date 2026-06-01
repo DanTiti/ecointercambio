@@ -2,6 +2,30 @@ const express = require('express');
 const router = express.Router();
 const db = require('../db');
 
+// --- NUEVA RUTA PARA ENVIAR LA PROPUESTA INICIAL ---
+router.post('/enviar-propuesta', async (req, res) => {
+  const { de_usuario, para_usuario, mensaje, producto_id, producto_cambio_id } = req.body;
+  
+  try {
+    // 1. Guardar el mensaje en el chat
+    await db.query("INSERT INTO mensajes (de_usuario, para_usuario, mensaje) VALUES (?, ?, ?)", [de_usuario, para_usuario, mensaje]);
+    
+    // 2. Registrar el trato inicial como "propuesta_pendiente"
+    const sqlTx = `
+      INSERT INTO transacciones (producto_id, producto_cambio_id, usuario_ofrece_id, usuario_busca_id, confirma_ofrece, confirma_busca, estado) 
+      VALUES (?, ?, ?, ?, 0, 0, 'propuesta_pendiente')
+    `;
+    // Nota: "para_usuario" es el dueño del producto, "de_usuario" es quien envía el mensaje proponiendo.
+    await db.query(sqlTx, [producto_id, producto_cambio_id, para_usuario, de_usuario]);
+    
+    res.status(200).json({ message: 'Propuesta enviada y registrada con éxito' });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Error al enviar la propuesta' });
+  }
+});
+
+// --- TUS RUTAS ORIGINALES INTACTAS ---
 router.post('/enviar', async (req, res) => {
   const { de_usuario, para_usuario, mensaje } = req.body;
   const sql = "INSERT INTO mensajes (de_usuario, para_usuario, mensaje) VALUES (?, ?, ?)";
@@ -73,19 +97,18 @@ router.get('/chats/:id', async (req, res) => {
   const userId = req.params.id;
   const sql = `
     SELECT
-      CASE
-        WHEN m.de_usuario = ? THEN m.para_usuario
-        ELSE m.de_usuario
-      END AS otro_usuario_id,
+      CASE WHEN m.de_usuario = ? THEN m.para_usuario ELSE m.de_usuario END AS otro_usuario_id,
       u.nickname AS otro_usuario_nickname,
       m.mensaje,
-      m.creado_en
+      m.creado_en,
+      (
+        SELECT ROUND(AVG(CASE WHEN t.usuario_ofrece_id = u.id THEN t.calificacion_a_ofrece ELSE t.calificacion_a_busca END), 1)
+        FROM transacciones t
+        WHERE (t.usuario_ofrece_id = u.id AND t.calificacion_a_ofrece IS NOT NULL)
+           OR (t.usuario_busca_id = u.id AND t.calificacion_a_busca IS NOT NULL)
+      ) AS promedio_estrellas
     FROM mensajes m
-    JOIN usuarios u ON u.id = 
-      CASE
-        WHEN m.de_usuario = ? THEN m.para_usuario
-        ELSE m.de_usuario
-      END
+    JOIN usuarios u ON u.id = CASE WHEN m.de_usuario = ? THEN m.para_usuario ELSE m.de_usuario END
     WHERE m.de_usuario = ? OR m.para_usuario = ?
     ORDER BY m.creado_en DESC
   `;
@@ -95,9 +118,10 @@ router.get('/chats/:id', async (req, res) => {
     const chatsMap = new Map();
     for (const row of results) {
       if (!chatsMap.has(row.otro_usuario_id)) {
+        const estrellasTxt = row.promedio_estrellas ? ` ⭐ ${row.promedio_estrellas}` : ' (Sin calificaciones)';
         chatsMap.set(row.otro_usuario_id, {
           userId: row.otro_usuario_id,
-          nickname: row.otro_usuario_nickname,
+          nickname: `${row.otro_usuario_nickname}${estrellasTxt}`,
           lastMessage: row.mensaje,
           lastDate: row.creado_en
         });
@@ -107,7 +131,7 @@ router.get('/chats/:id', async (req, res) => {
     res.json(chats);
   } catch (err) {
     console.error(err);
-    res.status(500).json({ error: 'Error en la consulta' });
+    res.status(500).json({ error: 'Error en la consulta de chats dinámicos.' });
   }
 });
 

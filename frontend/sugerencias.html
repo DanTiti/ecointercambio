@@ -1,12 +1,21 @@
 <!DOCTYPE html>
 <html lang="es">
-  
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Sugerencias - ReUtiles</title>
   <link rel="stylesheet" href="css/styles.css">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+  <style>
+    .rating-stars { color: #f59e0b; font-size: 0.8rem; margin: 5px 0; }
+    .btn-reportar-bandera {
+        position: absolute; top: 10px; right: 10px;
+        background: rgba(255, 255, 255, 0.9); border: none; border-radius: 50%;
+        width: 30px; height: 30px; cursor: pointer; z-index: 10;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+    }
+    .btn-reportar-bandera:hover { background: #fee2e2; color: #dc2626; }
+  </style>
 </head>
 <body>
   <div class="navbar">
@@ -18,7 +27,6 @@
       <div class="nav-main-actions">
         <button class="btn-visible" onclick="location.href='dashboard.html'"><i class="fas fa-plus"></i> Publicar</button>
         <button class="btn-visible" onclick="location.href='coincidencias.html'"><i class="fas fa-handshake"></i> Coincidencias</button>
-        
         <div class="dropdown">
           <button class="dropbtn" id="menuBtn"><i class="fas fa-bars"></i></button>
             <div class="dropdown-content" id="myDropdown">
@@ -39,11 +47,27 @@
   <div class="content-wrapper">
     <div class="container">
       <div style="text-align: center; margin-bottom: 30px;">
-        <h2 style="color: #333;"><i class="fas fa-lightbulb" style="color: #fbc02d;"></i> Sugerencias para ti</h2>
-        <p style="color: #666;">Basado en los útiles que estás buscando actualmente.</p>
+        <h2 style="color: #333;"><i class="fas fa-star" style="color: #fbc02d;"></i> Sugerencias Destacadas</h2>
+        <p style="color: #666;">Usuarios con alta reputación que podrían interesarte.</p>
       </div>
-
       <div id="sugerencias" class="grid-productos"></div>
+    </div>
+  </div>
+
+  <div id="reportModal" style="display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.5); align-items: center; justify-content: center;">
+    <div style="background-color: #fff; padding: 25px; border-radius: 10px; width: 90%; max-width: 400px; box-shadow: 0 4px 15px rgba(0,0,0,0.2);">
+      <h3>Reportar Publicación</h3>
+      <input type="hidden" id="reportProductId">
+      <form id="reportForm">
+        <select id="reportMotivo" style="width: 100%; padding: 10px; margin-bottom: 10px;" required>
+            <option value="Spam o Estafa">Spam o posible estafa</option>
+            <option value="No es un útil escolar">No es un útil escolar</option>
+            <option value="Artículo dañado">Artículo dañado</option>
+        </select>
+        <div id="reportStatus" style="display: none; padding: 10px; margin-bottom: 10px; font-size: 13px;"></div>
+        <button type="submit" id="btnEnviarReporte">Enviar Reporte</button>
+        <button type="button" onclick="cerrarModalReporte()">Cancelar</button>
+      </form>
     </div>
   </div>
 
@@ -57,51 +81,73 @@
   <script>
     const userId = localStorage.getItem('userId');
     document.getElementById("year").textContent = new Date().getFullYear();
-    
     if (!userId || userId === '0') location.href = 'login.html';
-
-    function abrirMensaje(usuarioId, nombreUsuario) {
-      const decoded = decodeURIComponent(nombreUsuario);
-      localStorage.setItem('contactoId', usuarioId);
-      localStorage.setItem('contactoNombre', decoded);
-      location.href = 'enviar-mensaje.html';
-    }
 
     async function cargarSugerencias() {
       try {
-        const res = await fetch(`https://ecointercambio-backend-0ts7.onrender.com/api/sugerencias/${userId}`);
-        const sugerencias = await res.json();
+        const res = await fetch(`${window.backendURL}/api/productos/sugerencias/${userId}`);
+        const data = await res.json();
         const contenedor = document.getElementById('sugerencias');
 
-        if (!Array.isArray(sugerencias) || sugerencias.length === 0) {
-          contenedor.innerHTML = `
-            <div style="grid-column: 1/-1; text-align: center; margin-top: 50px; color: #888;">
-              <i class="fas fa-ghost fa-3x" style="margin-bottom: 15px;"></i>
-              <p>No se encontraron sugerencias por ahora. ¡Intenta publicar más útiles!</p>
-            </div>`;
+        if (!Array.isArray(data) || data.length === 0) {
+          contenedor.innerHTML = `<p style="grid-column: 1/-1; text-align: center;">No hay sugerencias por ahora.</p>`;
           return;
         }
 
-        contenedor.innerHTML = sugerencias.map(p => `
-          <div class="producto" onclick="abrirMensaje(${p.usuario_id}, '${encodeURIComponent(p.nombreUsuario)}')" style="cursor: pointer;">
-            <div style="position: relative;">
-              <img src="${p.imagen}" alt="Sugerencia">
-              <span style="position: absolute; top: 10px; left: 10px; background: #fbc02d; color: #fff; padding: 4px 8px; border-radius: 4px; font-size: 0.7rem; font-weight: bold;">
-                RECOMENDADO
-              </span>
-            </div>
-            <div style="padding: 15px;">
-              <span style="font-size: 0.85rem; color: #666;"><i class="fas fa-user"></i> <b>${p.nombreUsuario}</b> ofrece:</span>
-              <p style="margin: 5px 0; font-size: 1.1rem; color: #333;"><b>${p.loQueOfrece}</b></p>
-              <p style="font-size: 0.8rem; color: #1e88e5; margin-top: 10px;">
-                <i class="fas fa-search"></i> Coincide con tu búsqueda de: <b>${p.loQueBusco}</b>
-              </p>
-            </div>
-          </div>
-        `).join('');
-      } catch (error) {
-        console.error("Error al cargar sugerencias:", error);
-      }
+        contenedor.innerHTML = data.map(p => {
+            const estrellas = p.rating ? '★'.repeat(Math.round(p.rating)) : '☆';
+            return `
+              <div class="producto" onclick="abrirMensaje(${p.id}, ${p.usuario_id}, '${encodeURIComponent(p.nombreUsuario)}')">
+                <button class="btn-reportar-bandera" onclick="event.stopPropagation(); abrirModalReporte(${p.id})">
+                    <i class="fas fa-flag"></i>
+                </button>
+                <img src="${p.imagen}" alt="Producto">
+                <div style="padding: 10px;">
+                  <b>${p.nombreUsuario}</b>
+                  <div class="rating-stars">${estrellas} (${p.rating ? parseFloat(p.rating).toFixed(1) : '0'})</div>
+                  <p>Ofrece: <b>${p.ofrece}</b></p>
+                </div>
+              </div>
+            `;
+        }).join('');
+      } catch (error) { console.error(error); }
+    }
+
+    function abrirModalReporte(pId) {
+        document.getElementById('reportProductId').value = pId;
+        document.getElementById('reportModal').style.display = 'flex';
+    }
+    function cerrarModalReporte() { document.getElementById('reportModal').style.display = 'none'; }
+    
+    document.getElementById('reportForm').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const btnEnviar = document.getElementById('btnEnviarReporte');
+        const statusDiv = document.getElementById('reportStatus');
+        const pId = document.getElementById('reportProductId').value;
+        const motivo = document.getElementById('reportMotivo').value;
+
+        btnEnviar.innerText = "Enviando...";
+        try {
+            const res = await fetch(`${window.backendURL}/api/reportes`, {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({ producto_id: pId, usuario_reporta_id: userId, motivo })
+            });
+            if(res.ok) {
+                statusDiv.style.display = 'block';
+                statusDiv.style.backgroundColor = '#dcfce7';
+                statusDiv.innerText = "Reporte enviado con éxito";
+                setTimeout(cerrarModalReporte, 1500);
+            }
+        } catch(err) { alert("Error al reportar"); }
+        btnEnviar.innerText = "Enviar Reporte";
+    });
+
+    function abrirMensaje(pId, uId, nUser) {
+        localStorage.setItem('currentProductId', pId);
+        localStorage.setItem('contactoId', uId);
+        localStorage.setItem('contactoNombre', decodeURIComponent(nUser));
+        location.href = 'enviar-mensaje.html';
     }
 
     cargarSugerencias();

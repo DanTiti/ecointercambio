@@ -54,9 +54,13 @@
         const notifSpan = document.getElementById('notif');
         document.getElementById("year").textContent = new Date().getFullYear();
 
+        const backendURL = window.location.hostname === '127.0.0.1' || window.location.hostname === 'localhost'
+            ? 'http://127.0.0.1:25244' 
+            : 'https://ecointercambio-backend-0ts7.onrender.com';
+
         if (!userId) location.href = 'login.html';
 
-        fetch(`https://ecointercambio-backend-0ts7.onrender.com/api/mensajes/chats/${userId}`)
+        fetch(`${backendURL}/api/mensajes/chats/${userId}`)
             .then(res => res.json())
             .then(chats => {
                 const listaChatsDiv = document.getElementById('listaChats');
@@ -96,7 +100,7 @@
             });
 
         function actualizarContadorGlobal() {
-            fetch(`https://ecointercambio-backend-0ts7.onrender.com/api/mensajes/no-leidos/${userId}`)
+            fetch(`${backendURL}/api/mensajes/no-leidos/${userId}`)
                 .then(res => res.json())
                 .then(data => {
                     if (data && data.length > 0) {

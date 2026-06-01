@@ -6,6 +6,24 @@
   <title>ReÚtiles - Login</title>
   <link rel="stylesheet" href="css/styles.css">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+  <style>
+    /* Estilo profesional y centrado */
+    .forgot-link-container {
+      text-align: center;
+      margin: 15px 0 20px 0;
+    }
+    .forgot-link {
+      font-size: 0.9rem;
+      color: #1e88e5;
+      text-decoration: none;
+      transition: all 0.2s ease;
+      font-weight: 500;
+    }
+    .forgot-link:hover {
+      color: #1565c0;
+      text-decoration: underline;
+    }
+  </style>
 </head>
 <body>
   <div class="navbar">
@@ -28,6 +46,11 @@
       <form id="loginForm">
         <input type="email" name="email" placeholder="Correo electrónico" required>
         <input type="password" name="password" placeholder="Contraseña" required>
+        
+        <div class="forgot-link-container">
+          <a href="forgot-password.html" class="forgot-link">¿Olvidaste tu contraseña?</a>
+        </div>
+
         <button type="submit" id="loginBtn">Entrar</button>
       </form>
 
@@ -37,6 +60,7 @@
     </div>
   </div>
   
+  <script src="js/notificaciones.js"></script>
   <script>
     document.getElementById('loginForm').addEventListener('submit', async (e) => {
       e.preventDefault();
@@ -54,7 +78,7 @@
       const password = form.password.value;
 
       try {
-        const res = await fetch('http://localhost:25244/api/auth/login', {
+        const res = await fetch(`${window.backendURL}/api/auth/login`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ email, password })

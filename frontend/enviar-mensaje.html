@@ -3,9 +3,10 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Enviar mensaje - ReÚtiles</title>
+  <title>Enviar Propuesta - ReÚtiles</title>
   <link rel="stylesheet" href="css/styles.css" />
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 </head>
 <body>
   <div class="navbar">
@@ -17,7 +18,6 @@
       <div class="nav-main-actions">
         <button class="btn-visible" onclick="location.href='dashboard.html'"><i class="fas fa-plus"></i> Publicar</button>
         <button class="btn-visible" onclick="location.href='coincidencias.html'"><i class="fas fa-handshake"></i> Coincidencias</button>
-        
         <div class="dropdown">
           <button class="dropbtn" id="menuBtn"><i class="fas fa-bars"></i></button>
             <div class="dropdown-content" id="myDropdown">
@@ -42,19 +42,23 @@
             <button onclick="history.back()" style="background: none; color: #1e88e5; font-size: 1.2rem; border: none; cursor: pointer;">
                 <i class="fas fa-arrow-left"></i>
             </button>
-            <h2 style="margin: 0;">Escribe a <span id="nombreDestinatario" style="color: #1e88e5;">...</span></h2>
+            <h2 style="margin: 0;">Proponer trato a <span id="nombreDestinatario" style="color: #1e88e5;">...</span></h2>
         </div>
 
         <form id="formMensaje" class="form-chat" style="display: flex; flex-direction: column; gap: 15px;">
-            <p style="color: #666; font-size: 0.95rem;">Escribe tu propuesta o duda sobre este intercambio:</p>
-            <textarea id="mensaje" placeholder="Hola, me gustaría intercambiar mi..." required 
-                style="width:100%; height:150px; padding: 15px; border-radius: 12px; border: 1px solid #ddd; resize: none; font-family: inherit;"></textarea>
+            <p style="color: #666; font-size: 0.95rem; font-weight:bold;">1. Selecciona qué producto vas a dar a cambio:</p>
+            <select id="selectMiProducto" required style="width:100%; padding: 12px; border-radius: 8px; border: 1px solid #ddd; background: white; font-size: 1rem;">
+                <option value="">Cargando tus publicaciones...</option>
+            </select>
+
+            <p style="color: #666; font-size: 0.95rem; font-weight:bold; margin-top: 10px;">2. Escribe tu mensaje:</p>
+            <textarea id="mensaje" placeholder="Hola, me gustaría intercambiar esto..." required 
+                style="width:100%; height:120px; padding: 15px; border-radius: 12px; border: 1px solid #ddd; resize: none; font-family: inherit;"></textarea>
             
             <button type="submit" class="btn-send" style="width: 100%; padding: 15px; font-weight: bold; font-size: 1.1rem; display: flex; align-items: center; justify-content: center; gap: 10px;">
-                <i class="fas fa-paper-plane"></i> Enviar Mensaje
+                <i class="fas fa-paper-plane"></i> Enviar Propuesta
             </button>
         </form>
-        <div id="estado" style="text-align: center; margin-top: 15px; color: #d32f2f; font-weight: bold;"></div>
       </div>
     </div>
   </div>
@@ -64,68 +68,93 @@
   </footer>
 
   <script src="js/menu.js"></script>
+  <script>
+    const userId = localStorage.getItem('userId');
+    const contactoId = localStorage.getItem('contactoId');
+    const contactoNombre = localStorage.getItem('contactoNombre');
+    const productoId = localStorage.getItem('currentProductId');
+    const notifSpan = document.getElementById('notif');
+    const backendURL = window.location.hostname === '127.0.0.1' || window.location.hostname === 'localhost'
+      ? 'http://127.0.0.1:25244' 
+      : 'https://ecointercambio-backend-0ts7.onrender.com';
+    
+    document.getElementById("year").textContent = new Date().getFullYear();
+    document.getElementById('nombreDestinatario').innerText = contactoNombre || 'usuario';
 
-<script>
-  const userId = localStorage.getItem('userId');
-  const contactoId = localStorage.getItem('contactoId');
-  const contactoNombre = localStorage.getItem('contactoNombre');
-  const notifSpan = document.getElementById('notif');
-  document.getElementById("year").textContent = new Date().getFullYear();
-  
-  if (!userId || !contactoId) {
-    alert('Faltan datos del contacto. Redirigiendo...');
-    location.href = 'inicio.html';
-  }
-
-  document.getElementById('nombreDestinatario').innerText = contactoNombre || 'usuario';
-
-  document.getElementById('formMensaje').addEventListener('submit', async (e) => {
-    e.preventDefault();
-    const btn = e.target.querySelector('button');
-    const mensaje = document.getElementById('mensaje').value.trim();
-    if (!mensaje) return;
-
-    btn.disabled = true;
-    btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Enviando...';
-
-    try {
-      const res = await fetch('https://ecointercambio-backend-0ts7.onrender.com/api/mensajes/enviar', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          de_usuario: userId,
-          para_usuario: contactoId,
-          mensaje: mensaje
-        })
+    if (!userId || !contactoId || !productoId) {
+      Swal.fire('Error', 'Faltan datos del producto o contacto.', 'error').then(() => {
+        location.href = 'inicio.html';
       });
-
-      if (res.ok) {
-        location.href = 'chat.html';
-      } else {
-        const data = await res.json();
-        document.getElementById('estado').innerText = data.message || 'Error al enviar.';
-        btn.disabled = false;
-        btn.innerHTML = '<i class="fas fa-paper-plane"></i> Enviar Mensaje';
-      }
-    } catch (err) {
-      console.error(err);
-      document.getElementById('estado').innerText = 'Error de conexión.';
-      btn.disabled = false;
-      btn.innerHTML = '<i class="fas fa-paper-plane"></i> Enviar Mensaje';
     }
-  });
 
-  function actualizarContador() {
-    fetch(`https://ecointercambio-backend-0ts7.onrender.com/api/mensajes/no-leidos/${userId}`)
-        .then(res => res.json())
-        .then(data => {
-            if (data && data.length > 0) {
-                notifSpan.innerText = ` (${data.length})`;
-                notifSpan.style.color = "red";
-            }
+    async function cargarMisProductos() {
+        try {
+            const res = await fetch(`${backendURL}/api/productos/usuario/${userId}`);
+            const prods = await res.json();
+            const sel = document.getElementById('selectMiProducto');
+            sel.innerHTML = '<option value="">-- Selecciona el artículo que ofreces --</option>';
+            prods.filter(p => p.estado !== 'intercambiado').forEach(p => {
+                sel.innerHTML += `<option value="${p.id}">${p.ofrece}</option>`;
+            });
+        } catch (error) {
+            console.error("Error al cargar productos:", error);
+        }
+    }
+
+    document.getElementById('formMensaje').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const btn = e.target.querySelector('button');
+      const mensaje = document.getElementById('mensaje').value.trim();
+      const miProductoId = document.getElementById('selectMiProducto').value;
+      
+      btn.disabled = true;
+      btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Enviando Propuesta...';
+
+      try {
+        const res = await fetch(`${backendURL}/api/mensajes/enviar-propuesta`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            de_usuario: userId,
+            para_usuario: contactoId,
+            producto_id: productoId,
+            producto_cambio_id: miProductoId,
+            mensaje: mensaje
+          })
         });
-  }
-  actualizarContador();
-</script>
+
+        if (res.ok) {
+          await Swal.fire({
+            icon: 'success',
+            title: '¡Propuesta enviada!',
+            text: 'El usuario recibirá tu oferta.',
+            timer: 2000,
+            showConfirmButton: false
+          });
+          location.href = 'chat.html';
+        } else {
+          Swal.fire('Error', 'No se pudo enviar la propuesta.', 'error');
+          btn.disabled = false;
+          btn.innerHTML = '<i class="fas fa-paper-plane"></i> Enviar Propuesta';
+        }
+      } catch (err) {
+        Swal.fire('Error', 'Error de conexión con el servidor.', 'error');
+        btn.disabled = false;
+        btn.innerHTML = '<i class="fas fa-paper-plane"></i> Enviar Propuesta';
+      }
+    });
+
+    async function actualizarContador() {
+      const res = await fetch(`${backendURL}/api/mensajes/no-leidos/${userId}`);
+      const data = await res.json();
+      if (data && data.length > 0) {
+        notifSpan.innerText = ` (${data.length})`;
+        notifSpan.style.color = "red";
+      }
+    }
+    
+    cargarMisProductos();
+    actualizarContador();
+  </script>
 </body>
 </html>

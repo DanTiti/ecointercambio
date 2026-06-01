@@ -6,6 +6,39 @@
   <title>Coincidencias - ReUtiles</title>
   <link rel="stylesheet" href="css/styles.css">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+  <!-- CDN de SweetAlert2 -->
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+  <style>
+    /* Estilos corregidos de la bandera para que salga a la IZQUIERDA */
+    .btn-reportar-bandera {
+      position: absolute;
+      top: 10px;
+      left: 10px; /* Se movió a la izquierda para no chocar con la etiqueta */
+      background: rgba(255, 255, 255, 0.9);
+      border: none;
+      border-radius: 50%;
+      width: 32px;
+      height: 32px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+      transition: transform 0.2s, background 0.2s;
+      z-index: 10;
+    }
+    .btn-reportar-bandera:hover {
+      transform: scale(1.1);
+      background: #fff;
+    }
+    .btn-reportar-bandera i {
+      color: #9ca3af;
+      transition: color 0.2s;
+    }
+    .btn-reportar-bandera:hover i {
+      color: #dc2626;
+    }
+  </style>
 </head>
 <body>
   <div class="navbar">
@@ -45,6 +78,36 @@
     </div>
   </div>
 
+  <!-- 🚩 CONTENEDOR DEL MODAL DE REPORTES -->
+  <div id="reportModal" style="display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.5); align-items: center; justify-content: center;">
+    <div style="background-color: #fff; padding: 25px; border-radius: 10px; width: 90%; max-width: 400px; box-shadow: 0 4px 15px rgba(0,0,0,0.2); position: relative;">
+      <h3 style="margin-top: 0; color: #333;"><i class="fas fa-flag" style="color: #dc2626; margin-right: 8px;"></i> Reportar Publicación</h3>
+      <p style="font-size: 13px; color: #666; margin-bottom: 15px;">¿Por qué quieres reportar este artículo? Ayúdanos a mantener la seguridad escolar.</p>
+      <input type="hidden" id="reportProductId">
+      <form id="reportForm">
+        <div style="margin-bottom: 15px;">
+          <label style="display: block; font-size: 14px; font-weight: bold; margin-bottom: 5px; color: #444;">Motivo:</label>
+          <select id="reportMotivo" style="width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 5px; background: #fff;" required>
+            <option value="" disabled selected>Selecciona una opción</option>
+            <option value="No es un útil escolar">No es un útil escolar</option>
+            <option value="Contenido ofensivo/inapropiado">Contenido ofensivo o inapropiado</option>
+            <option value="Spam o Estafa">Spam o posible estafa</option>
+            <option value="Artículo dañado/Falso">No coincide con la descripción</option>
+          </select>
+        </div>
+        <div style="margin-bottom: 20px;">
+          <label style="display: block; font-size: 14px; font-weight: bold; margin-bottom: 5px; color: #444;">Detalles (Opcional):</label>
+          <textarea id="reportDetalles" rows="3" placeholder="Escribe más contexto aquí..." style="width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 5px; resize: none; font-family: sans-serif; box-sizing: border-box;"></textarea>
+        </div>
+        <div id="reportStatus" style="display: none; font-size: 13px; padding: 10px; border-radius: 5px; margin-bottom: 15px; font-weight: bold;"></div>
+        <div style="display: flex; justify-content: flex-end; gap: 10px;">
+          <button type="button" onclick="cerrarModalReporte()" style="background: #e5e7eb; color: #374151; border: none; padding: 10px 15px; border-radius: 5px; cursor: pointer; font-weight: bold;">Cancelar</button>
+          <button type="submit" id="btnEnviarReporte" style="background: #dc2626; color: white; border: none; padding: 10px 15px; border-radius: 5px; cursor: pointer; font-weight: bold;">Enviar Reporte</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
   <footer class="main-footer">
     <p>&copy; <span id="year"></span> ReÚtiles - Proyecto Escolar</p>
   </footer>
@@ -60,9 +123,20 @@
 
     async function cargarMatches() {
       try {
-        const res = await fetch(`https://ecointercambio-backend-0ts7.onrender.com/api/match/${userId}`);
+        const res = await fetch(`${backendURL}/api/match/${userId}`);
         const matches = await res.json();
         const contenedor = document.getElementById('matches');
+
+        const disponibles = matches.filter(m => m.estado !== 'intercambiado');
+
+        if (disponibles.length === 0) {
+            contenedor.innerHTML = `
+            <div style="grid-column: 1/-1; text-align: center; margin-top: 50px;">
+              <i class="fas fa-search fa-3x" style="color: #ccc; margin-bottom: 15px;"></i>
+              <p style="color: #888; font-size: 1.1rem;">No se encontraron coincidencias aún. ¡Sigue publicando!</p>
+            </div>`;
+            return;
+        }
 
         if (!matches || matches.length === 0) {
           contenedor.innerHTML = `
@@ -73,7 +147,24 @@
           return;
         }
 
-        contenedor.innerHTML = matches.map(m => {
+        const productosReportados = JSON.parse(localStorage.getItem('productosReportados') || '[]');
+
+        // Filtramos reportados Y los que ya están intercambiados
+        const matchesVisibles = matches.filter(m => 
+            !productosReportados.includes(m.id_producto || m.producto_id || m.id) &&
+            m.estado !== 'intercambiado'
+        );
+
+        if (matchesVisibles.length === 0) {
+          contenedor.innerHTML = `
+            <div style="grid-column: 1/-1; text-align: center; margin-top: 50px;">
+              <i class="fas fa-search fa-3x" style="color: #ccc; margin-bottom: 15px;"></i>
+              <p style="color: #888; font-size: 1.1rem;">No se encontraron coincidencias aún. ¡Sigue publicando!</p>
+            </div>`;
+          return;
+        }
+
+        contenedor.innerHTML = matchesVisibles.map(m => {
           let colorLabel = '';
           let iconMatch = '';
           
@@ -81,10 +172,18 @@
           else if(m.tipo === 'categoria') { colorLabel = '#1e88e5'; iconMatch = 'fa-shapes'; }
           else { colorLabel = '#f9a825'; iconMatch = 'fa-exchange-alt'; }
 
+          const targetProductId = m.id_producto || m.producto_id || m.id;
+
           return `
-            <div class="producto match-card" onclick="abrirMensaje(${m.usuario}, '${encodeURIComponent(m.nombreUsuario)}')" style="border-top: 5px solid ${colorLabel}; cursor: pointer;">
+            <div class="producto match-card" onclick="abrirMensaje(${targetProductId}, ${m.usuario}, '${encodeURIComponent(m.nombreUsuario)}')" style="border-top: 5px solid ${colorLabel}; cursor: pointer; position: relative;">
+              
+              <!-- 🚩 BOTÓN DE REPORTE A LA IZQUIERDA -->
+              <button class="btn-reportar-bandera" onclick="event.stopPropagation(); abrirModalReporte(${targetProductId})">
+                <i class="fas fa-flag"></i>
+              </button>
+
               <div style="position: relative;">
-                <img src="${m.imagen}" alt="Producto" style="height: 180px; object-fit: cover;">
+                <img src="${m.imagen}" alt="Producto" style="height: 180px; object-fit: cover; width: 100%;">
                 <span style="position: absolute; top: 10px; right: 10px; background: ${colorLabel}; color: white; padding: 4px 10px; border-radius: 20px; font-size: 0.75rem; font-weight: bold;">
                   <i class="fas ${iconMatch}"></i> ${m.tipo.toUpperCase()}
                 </span>
@@ -96,7 +195,8 @@
                 <p style="font-size: 0.85rem; color: #666; margin: 0;">Él busca: <span style="color: #d32f2f;">${m.buscaEl}</span></p>
                 <p style="font-size: 0.85rem; color: #666; margin: 5px 0 0 0;">Tú buscas: <span style="color: #1e88e5;">${m.buscaYo}</span></p>
                 <div style="margin-top: 15px; text-align: center;">
-                  <button class="btn-send" style="width: 100%; padding: 8px; font-size: 0.9rem;">
+                  <!-- BOTÓN CORREGIDO CON ESPACIADO Y CENTRADO -->
+                  <button class="btn-send" style="width: 100%; padding: 10px; font-size: 0.95rem; display: flex; align-items: center; justify-content: center; gap: 8px;" onclick="event.stopPropagation(); abrirMensaje(${targetProductId}, ${m.usuario}, '${encodeURIComponent(m.nombreUsuario)}')">
                     <i class="fas fa-comments"></i> Proponer Intercambio
                   </button>
                 </div>
@@ -109,11 +209,85 @@
       }
     }
 
-    function abrirMensaje(usuarioId, nombreUsuario) {
+    // FUNCIÓN ÚNICA Y CORRECTA (Manda a enviar-mensaje.html)
+    function abrirMensaje(productoId, usuarioId, nombreUsuario) {
+      localStorage.setItem('currentProductId', productoId);
       localStorage.setItem('contactoId', usuarioId);
       localStorage.setItem('contactoNombre', decodeURIComponent(nombreUsuario));
-      location.href = 'enviar-mensaje.html';
+      location.href = 'enviar-mensaje.html'; 
     }
+
+    // --- MANEJO LOGICO INTERNO DEL MODAL DE REPORTES ---
+    function abrirModalReporte(productoId) {
+        document.getElementById('reportProductId').value = productoId;
+        document.getElementById('reportModal').style.display = 'flex';
+    }
+
+    function cerrarModalReporte() {
+        document.getElementById('reportModal').style.display = 'none';
+        document.getElementById('reportForm').reset();
+        document.getElementById('reportStatus').style.display = 'none';
+    }
+
+    document.getElementById('reportForm').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const btnEnviar = document.getElementById('btnEnviarReporte');
+        const statusDiv = document.getElementById('reportStatus');
+        
+        const producto_id = document.getElementById('reportProductId').value;
+        const motivo = document.getElementById('reportMotivo').value;
+        const detalles = document.getElementById('reportDetalles').value;
+        const usuario_reporta_id = userId; 
+
+        btnEnviar.innerText = "Enviando...";
+        btnEnviar.disabled = true;
+
+        try {
+            const res = await fetch(`${backendURL}/api/reportes`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ producto_id, usuario_reporta_id, motivo, detalles })
+            });
+
+            const data = await res.json();
+
+            if (res.ok) {
+                statusDiv.style.backgroundColor = '#dcfce7';
+                statusDiv.style.color = '#16a34a';
+                statusDiv.innerText = data.message;
+                statusDiv.style.display = 'block';
+
+                const idReportado = Number(producto_id);
+                let reportados = JSON.parse(localStorage.getItem('productosReportados') || '[]');
+                if (!reportados.includes(idReportado)) {
+                    reportados.push(idReportado);
+                    localStorage.setItem('productosReportados', JSON.stringify(reportados));
+                }
+
+                cargarMatches();
+
+                setTimeout(() => {
+                    cerrarModalReporte();
+                    btnEnviar.innerText = "Enviar Reporte";
+                    btnEnviar.disabled = false;
+                }, 2000);
+            } else {
+                statusDiv.style.backgroundColor = '#fee2e2';
+                statusDiv.style.color = '#dc2626';
+                statusDiv.innerText = data.error || "Error al enviar el reporte";
+                statusDiv.style.display = 'block';
+                btnEnviar.innerText = "Enviar Reporte";
+                btnEnviar.disabled = false;
+            }
+        } catch (err) {
+            statusDiv.style.backgroundColor = '#fee2e2';
+            statusDiv.style.color = '#dc2626';
+            statusDiv.innerText = "Error de conexión con el servidor.";
+            statusDiv.style.display = 'block';
+            btnEnviar.innerText = "Enviar Reporte";
+            btnEnviar.disabled = false;
+        }
+    });
     
     cargarMatches();
   </script>

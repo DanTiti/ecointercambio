@@ -78,7 +78,7 @@
     if (!userId || userId === '0') location.href = 'login.html';
 
     function cargarPublicaciones() {
-      fetch(`https://ecointercambio-backend-0ts7.onrender.com/api/productos/mios/${userId}`)
+      fetch(`${backendURL}/api/productos/mios/${userId}`)
         .then(res => res.json())
         .then(productos => {
           const contenedor = document.getElementById('misPublicaciones');
@@ -167,7 +167,7 @@
 
     async function ejecutarEliminar(id) {
       try {
-        const res = await fetch(`https://ecointercambio-backend-0ts7.onrender.com/api/productos/${id}`, {
+        const res = await fetch(`${backendURL}/api/productos/${id}`, {
           method: 'DELETE',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ userId })
@@ -188,7 +188,7 @@
 
     async function ejecutarIntercambio(id) {
       try {
-        await fetch(`https://ecointercambio-backend-0ts7.onrender.com/api/productos/marcar-intercambiado/${id}`, { method: 'PUT' });
+        await fetch(`${backendURL}/api/productos/marcar-intercambiado/${id}`, { method: 'PUT' });
         document.getElementById(`producto-${id}`).remove();
         mostrarStatus("¡Felicidades por tu intercambio!", "success");
         cargarPublicaciones();

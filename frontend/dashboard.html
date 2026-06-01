@@ -41,12 +41,10 @@
           <h2 style="margin: 0; color: #333;"><i class="fas fa-plus-circle" style="color: #1e88e5;"></i> Publica un nuevo útil</h2>
         </div>
 
-        <div id="statusMsg" class="error-container" style="margin-bottom: 20px;">
+        <div id="statusMsg" class="error-container" style="margin-bottom: 20px; display: none;">
           <i id="statusIcon" class="fas fa-exclamation-circle"></i>
           <span id="statusText"></span>
         </div>
-
-        <form id="formProducto" enctype="multipart/form-data" class="form-chat" ...>
 
         <form id="formProducto" enctype="multipart/form-data" class="form-chat" style="display: flex; flex-direction: column; gap: 20px;">
           <div class="input-group">
@@ -86,12 +84,10 @@
   <script>
     const userId = localStorage.getItem('userId');
     document.getElementById("year").textContent = new Date().getFullYear();
-    
     if (!userId || userId === '0') location.href = 'login.html';
 
     async function publicarProducto(e) {
       e.preventDefault();
-      
       const statusMsg = document.getElementById('statusMsg');
       const statusText = document.getElementById('statusText');
       const statusIcon = document.getElementById('statusIcon');
@@ -105,29 +101,22 @@
       formData.append('usuario_id', userId);
 
       try {
-        const res = await fetch('https://ecointercambio-backend-0ts7.onrender.com/api/productos/add', {
+        const res = await fetch(`${window.backendURL}/api/productos/add`, {
           method: 'POST',
           body: formData
         });
-        
         const data = await res.json();
-
         if (res.ok) {
-          // ÉXITO: Estilo verde
           statusMsg.style.backgroundColor = '#dcfce7'; 
           statusMsg.style.color = '#16a34a';
           statusMsg.style.borderColor = '#bbf7d0';
           statusIcon.className = "fas fa-check-circle";
           statusText.innerText = "¡Publicado con éxito!";
           statusMsg.style.display = 'flex';
-          
-          e.target.reset(); // Limpiar formulario
-          cargarCoincidencias(); // Actualizar lista de abajo
-          
-          // Ocultar mensaje después de 5 segundos
+          e.target.reset();
+          cargarCoincidencias();
           setTimeout(() => { statusMsg.style.display = 'none'; }, 5000);
         } else {
-          // ERROR CONTROLADO: Estilo rojo
           statusMsg.style.backgroundColor = '#fee2e2';
           statusMsg.style.color = '#dc2626';
           statusMsg.style.borderColor = '#fecaca';
@@ -136,7 +125,10 @@
           statusMsg.style.display = 'flex';
         }
       } catch (err) {
-        // ERROR DE RED
+        statusMsg.style.backgroundColor = '#fee2e2';
+        statusMsg.style.color = '#dc2626';
+        statusMsg.style.borderColor = '#fecaca';
+        statusIcon.className = "fas fa-exclamation-circle";
         statusText.innerText = "Error de conexión con el servidor";
         statusMsg.style.display = 'flex';
       } finally {
@@ -146,32 +138,33 @@
     }
 
     async function cargarCoincidencias() {
-      const res = await fetch(`https://ecointercambio-backend-0ts7.onrender.com/api/match/${userId}`);
-      const coincidencias = await res.json();
-      const container = document.getElementById('coincidenciasRapidas');
+      try {
+        const res = await fetch(`${window.backendURL}/api/match/${userId}`);
+        const coincidencias = await res.json();
+        const container = document.getElementById('coincidenciasRapidas');
 
-      if (coincidencias.length > 0) {
-        container.innerHTML = `
-          <h3 style="text-align: center; color: #1e88e5; margin-bottom: 20px;">¡Encontramos coincidencias para ti!</h3>
-          <div class="grid-productos" id="matchesGrid">
-            ${coincidencias.map(c => `
-              <div class="producto" onclick="abrirMensaje(${c.usuario}, '${encodeURIComponent(c.nombreUsuario)}')" style="cursor: pointer;">
-                <img src="${c.imagen}" alt="Producto">
-                <div style="padding: 10px;">
-                  <span style="display: block; font-size: 0.8rem; color: #666;">Usuario: <b>${c.nombreUsuario}</b></span>
-                  <p style="margin: 5px 0;">Ofrece: <b>${c.nombreProductoEl}</b></p>
-                  <p style="font-size: 0.85rem; color: #1e88e5;"><i class="fas fa-comments"></i> Toca para chatear</p>
+        if (Array.isArray(coincidencias) && coincidencias.length > 0) {
+          container.innerHTML = `
+            <h3 style="text-align: center; color: #1e88e5; margin-bottom: 20px;">¡Coincidencias!</h3>
+            <div class="grid-productos">
+              ${coincidencias.map(c => `
+                <div class="producto" onclick="abrirMensaje(${c.usuario}, '${encodeURIComponent(c.nombreUsuario)}')">
+                  <img src="${c.imagen}" alt="Producto">
+                  <div style="padding: 10px;">
+                    <p><b>${c.nombreUsuario}</b></p>
+                    <p>Ofrece: ${c.ofreceEl}</p>
+                  </div>
                 </div>
-              </div>
-            `).join('')}
-          </div>
-        `;
-      }
+              `).join('')}
+            </div>
+          `;
+        }
+      } catch (err) { console.error(err); }
     }
 
-    function abrirMensaje(usuarioId, nombreUsuario) {
-      localStorage.setItem('contactoId', usuarioId);
-      localStorage.setItem('contactoNombre', decodeURIComponent(nombreUsuario));
+    function abrirMensaje(uId, nUser) {
+      localStorage.setItem('contactoId', uId);
+      localStorage.setItem('contactoNombre', decodeURIComponent(nUser));
       location.href = 'enviar-mensaje.html';
     }
 
