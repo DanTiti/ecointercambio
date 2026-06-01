@@ -23,7 +23,9 @@
 </head>
 <body>
 
-  <div class="navbar">
+
+
+  <div class="navbar" >
     <div class="nav-container">
       <div class="logo-container" onclick="location.href='inicio.html'" style="cursor: pointer; display: flex; align-items: center; gap: 10px;">
         <i class="fas fa-home" style="font-size: 1.5rem;"></i>
@@ -106,7 +108,7 @@
       });
 
     fetch(`${window.backendURL}/api/match/revisado/${userId}`, { method: 'PUT' });
-
+//lo que sea
     async function cargarPublicaciones() {
       try {
         const res = await fetch(`${window.backendURL}/api/productos/todos/${userId}`);
@@ -118,7 +120,6 @@
 
           document.getElementById('publicaciones').innerHTML = productosVisibles.map(p => {
             const actualProductId = p.id || p.producto_id;
-            // Generación de estrellas
             const estrellas = p.rating ? '★'.repeat(Math.round(p.rating)) : '☆';
             const ratingVal = p.rating ? parseFloat(p.rating).toFixed(1) : '0';
 
