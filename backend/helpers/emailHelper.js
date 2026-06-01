@@ -1,30 +1,29 @@
 const nodemailer = require('nodemailer');
 const path = require('path'); 
 const dotenv = require('dotenv');
-const dns = require('dns'); // <--- 1. IMPORTAMOS EL MÓDULO DNS DE NODE
+const dns = require('dns'); 
 
-// 🔥 2. PARCHE CRÍTICO PARA RENDER (Soluciona ENETUNREACH)
-// Fuerza a Node.js a priorizar IPv4 sobre IPv6 para que no intente usar la red bloqueada de Render
+// 1. Mantenemos el parche de IPv4 para evitar el error de red anterior
 dns.setDefaultResultOrder('ipv4first');
 
 // Configuración de dotenv para desarrollo local
 dotenv.config({ path: path.join(__dirname, '..', '..', '.env') });
 
-// Configuración robusta por puerto 587
+// 2. CAMBIO CRÍTICO: Usamos el Puerto 465 con SSL Directo (Inmune a bloqueos de STARTTLS)
 const transporter = nodemailer.createTransport({
   host: 'smtp.gmail.com',
-  port: 587,
-  secure: false, // false porque el puerto 587 usa STARTTLS
+  port: 465,
+  secure: true, // AL USAR PUERTO 465, ESTO DEBE SER TRUE (SSL DIRECTO)
   auth: {
     user: process.env.EMAIL_USER,
     pass: process.env.EMAIL_PASS // Tus 16 letras amarillas sin espacios
   },
   tls: {
-    rejectUnauthorized: false // Evita bloqueos de certificados en el contenedor
+    rejectUnauthorized: false // Evita problemas con las llaves de seguridad del contenedor de Render
   },
-  connectionTimeout: 15000,
-  greetingTimeout: 15000,
-  socketTimeout: 15000
+  connectionTimeout: 10000, // 10 segundos máximos para conectar
+  greetingTimeout: 10000,
+  socketTimeout: 10000
 });
 
 // Función para enviar el correo de verificación
