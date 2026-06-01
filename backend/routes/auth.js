@@ -7,6 +7,7 @@ const { sendVerificationEmail, sendResetPasswordEmail } = require('../helpers/em
 
 const REGEX_PASSWORD = /^(?=.*\d)(?=.*[a-z])(?=.*[A-Z]).{8,}$/;
 
+// --- RUTA DE REGISTRO DE USUARIOS ---
 router.post('/register', async (req, res) => {
   const { nickname, email, password } = req.body;
 
@@ -28,27 +29,26 @@ router.post('/register', async (req, res) => {
       return res.status(400).json({ error: 'El correo electrónico ya está registrado.' });
     }
 
-    // Aquí el CPU de Render se satura al 100% brevemente
     const hashedPassword = await bcrypt.hash(password, 10);
     const tokenVerificacion = crypto.randomBytes(32).toString('hex');
 
     const sql = "INSERT INTO usuarios (nickname, email, password, token_verificacion, verificado) VALUES (?, ?, ?, ?, 0)";
     await db.query(sql, [nickname, email, hashedPassword, tokenVerificacion]);
 
-    // 🔥 LA SOLUCIÓN AL TIMEOUT:
-    // Despachamos el correo en segundo plano dándole 1.5 segundos al CPU para respirar.
-    // Quitamos el 'await' para que la conexión de red no choque con el lag de Bcrypt.
-    setTimeout(() => {
-      console.log(`✉️ Despachando correo de verificación en segundo plano para: ${email}`);
-      sendVerificationEmail(email, nickname, tokenVerificacion).catch(mailErr => {
-        console.error("❌ Error diferido al enviar el correo de verificación:", mailErr);
+    // Forzamos al servidor a esperar el envío del correo antes de responderle al cliente.
+    // Esto evita que Render apague las conexiones de red en segundo plano.
+    try {
+      await sendVerificationEmail(email, nickname, tokenVerificacion);
+      return res.status(200).json({ 
+        message: 'Usuario registrado con éxito. Por favor, revisa tu correo electrónico para verificar tu cuenta.' 
       });
-    }, 1500);
-
-    // Respondemos de inmediato un 200 OK limpio para que register.html avance a espera.html
-    return res.status(200).json({ 
-      message: 'Usuario registrado con éxito. Por favor, revisa tu correo electrónico para verificar tu cuenta.' 
-    });
+    } catch (mailErr) {
+      console.error("❌ Error al enviar el correo de verificación:", mailErr);
+      // Si la red parpadea, responde 201 para que el frontend avance a espera.html de todos modos
+      return res.status(201).json({ 
+        message: 'Usuario registrado, pero hubo un problema al enviar el correo de activación. Contacta al administrador.' 
+      });
+    }
 
   } catch (err) {
     console.error("--- ERROR CRÍTICO EN REGISTRO ---");
@@ -57,6 +57,7 @@ router.post('/register', async (req, res) => {
   }
 });
 
+// --- RUTA PARA VERIFICAR EL CORREO (Avisa por Sockets) ---
 router.get('/verify', async (req, res) => {
   const { token } = req.query;
 
@@ -77,6 +78,7 @@ router.get('/verify', async (req, res) => {
     const sqlActualizar = "UPDATE usuarios SET verificado = 1, token_verificacion = NULL WHERE token_verificacion = ?";
     await db.query(sqlActualizar, [token]);
 
+    // Avisar en tiempo real al frontend mediante Socket.io
     const io = req.app.get('io');
     if (io) {
       io.emit(`verificado-${usuario.email}`, { verificado: true });
@@ -96,6 +98,7 @@ router.get('/verify', async (req, res) => {
   }
 });
 
+// --- RUTA PARA INICIAR SESIÓN ---
 router.post('/login', async (req, res) => {
   const { email, password } = req.body;
 
@@ -131,6 +134,7 @@ router.post('/login', async (req, res) => {
   }
 });
 
+// --- RUTA PARA SOLICITAR RECUPERACIÓN DE CONTRASEÑA ---
 router.post('/forgot-password', async (req, res) => {
   const { email } = req.body;
 
@@ -170,6 +174,7 @@ router.post('/forgot-password', async (req, res) => {
   }
 });
 
+// --- RUTA PARA GUARDAR LA NUEVA CONTRASEÑA ACTUALIZADA ---
 router.post('/reset-password', async (req, res) => {
   const { token, password } = req.body;
 
