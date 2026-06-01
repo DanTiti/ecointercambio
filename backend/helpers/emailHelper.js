@@ -1,3 +1,6 @@
+// 🔥 LA REGLA DE ORO PARA RENDER Y NODE 22: Obliga a usar IPv4 y evita el ENETUNREACH
+require('dns').setDefaultResultOrder('ipv4first');
+
 const nodemailer = require('nodemailer');
 const path = require('path'); 
 const dotenv = require('dotenv');
@@ -5,13 +8,14 @@ const dotenv = require('dotenv');
 // Configuración de dotenv
 dotenv.config({ path: path.join(__dirname, '..', '..', '.env') });
 
-// 🔥 CONFIGURACIÓN LIMPIA Y NATIVA:
-// Quitamos los candados DNS de IPv4 para que Render y tu Laptop trabajen sin fricciones
+// Configuración limpia pero con el host explícito (sin el service: 'gmail' que a veces ignora la regla DNS)
 const transporter = nodemailer.createTransport({
-  service: 'gmail',
+  host: 'smtp.gmail.com',
+  port: 465,
+  secure: true,
   auth: {
     user: process.env.EMAIL_USER,
-    pass: process.env.EMAIL_PASS // Tus 16 letras amarillas sin espacios
+    pass: process.env.EMAIL_PASS 
   }
 });
 
@@ -36,7 +40,7 @@ const enviarCorreoConReintentos = async (mailOptions, intentosMaximos = 3) => {
   }
 };
 
-// Función para enviar el correo de verificación (Usada principalmente por tu laptop/Ngrok)
+// Función para enviar el correo de verificación (Para Ngrok / Laptop)
 const sendVerificationEmail = async (email, nickname, token) => {
   const backendURL = process.env.BACKEND_URL || 'https://ecointercambio-backend-0ts7.onrender.com';
   const urlVerificacion = `${backendURL}/api/auth/verify?token=${token}`;
@@ -61,7 +65,7 @@ const sendVerificationEmail = async (email, nickname, token) => {
   await enviarCorreoConReintentos(mailOptions);
 };
 
-// Función para enviar el correo de recuperación (Usada por Render en la nube)
+// Función para enviar el correo de recuperación (Para Render / Nube)
 const sendResetPasswordEmail = async (email, token) => {
   const frontendURL = process.env.FRONTEND_URL || 'https://reutiles.onrender.com';
   const urlReset = `${frontendURL}/reset-password.html?token=${token}`;
