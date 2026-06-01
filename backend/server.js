@@ -11,20 +11,22 @@ const dotenv = require('dotenv');
 // 1. Configuración de dotenv apuntando a la raíz de ecointercambio
 dotenv.config({ path: path.join(__dirname, '..', '.env') });
 
-// 2. Inicialización de la aplicación Express (¡Esto debe ir antes de usar app!)
 const app = express();
-// 🔥 CONFIGURACIÓN CORS DEFINITIVA PARA NGROK + RENDER
+
+// 🔥 2. CONFIGURACIÓN DE CORS (Con parche para Ngrok)
 app.use(cors({
     origin: [
-        'https://reutiles.onrender.com', // Permite peticiones de tu página en la nube
-        'http://127.0.0.1:5500',         // Permite peticiones de tu Live Server local
+        'https://reutiles.onrender.com',
+        'http://127.0.0.1:5500',         
         'http://localhost:5500'
     ],
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-    // Autorizamos explícitamente la cabecera que salta la pantalla azul de Ngrok
     allowedHeaders: ['Content-Type', 'Authorization', 'ngrok-skip-browser-warning'], 
     credentials: true
 }));
+
+// 🔥 EL CANDADO DEFINITIVO: Forzamos a que todas las peticiones previas (OPTIONS) digan que "SÍ"
+app.options(/.*/, cors());
 
 app.use(bodyParser.json());
 
@@ -44,10 +46,16 @@ app.use('/api/transacciones', require('./routes/transacciones'));
 // 5. Configuración del Servidor HTTP y WebSockets (Socket.io)
 const server = http.createServer(app);
 
+// 🔥 PARCHE DE CORS PARA SOCKET.IO (Aceptando la cabecera secreta de Ngrok)
 const io = new Server(server, {
   cors: {
-    origin: "*", // Alineado con el CORS de express para evitar bloqueos en la nube
+    origin: [
+        'https://reutiles.onrender.com',
+        'http://127.0.0.1:5500',         
+        'http://localhost:5500'
+    ],
     methods: ['GET', 'POST'],
+    allowedHeaders: ["ngrok-skip-browser-warning"], // Esto es clave para que Ngrok deje pasar los sockets
     credentials: true
   }
 });
@@ -99,7 +107,7 @@ io.on('connection', (socket) => {
 const PORT = process.env.PORT || 3000;
 
 server.listen(PORT, () => {
-  console.log('Servidor corriendo en puerto', PORT);
+  console.log('🚀 Servidor corriendo en puerto', PORT);
 });
 
 /* ==========================================================================
