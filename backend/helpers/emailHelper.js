@@ -1,32 +1,40 @@
 const nodemailer = require('nodemailer');
 const path = require('path'); 
 const dotenv = require('dotenv');
-const dns = require('dns'); // Módulo DNS necesario
+const dns = require('dns'); 
+
+// Forzamos IPv4 global
+dns.setDefaultResultOrder('ipv4first');
 
 // Configuración de dotenv
 dotenv.config({ path: path.join(__dirname, '..', '..', '.env') });
 
-// CONFIGURACIÓN CON CASILLERO DE FUERZA PARA IPV4
-const transporter = nodemailer.createTransport({
-  service: 'gmail', // Volvemos al formato automático optimizado de nodemailer
-  auth: {
-    user: process.env.EMAIL_USER,
-    pass: process.env.EMAIL_PASS // Tus 16 letras amarillas sin espacios
-  },
-  tls: {
-    rejectUnauthorized: false
-  },
-  // Mantenemos el candado estricto de IPv4
-  lookup: (hostname, options, callback) => {
-    dns.lookup(hostname, { family: 4 }, callback);
-  },
-  connectionTimeout: 10000, // Bajamos a 10 segundos para que si se traba, reintente rápido
-  greetingTimeout: 10000,
-  socketTimeout: 10000
-});
+// 🔥 CORREGIDO: Función para generar un transporte limpio y fresco en cada petición
+// Esto evita que Render use sockets obsoletos o congelados del arranque
+const crearTransporterFresco = () => {
+  return nodemailer.createTransport({
+    service: 'gmail',
+    auth: {
+      user: process.env.EMAIL_USER,
+      pass: process.env.EMAIL_PASS // Tus 16 letras amarillas sin espacios
+    },
+    tls: {
+      rejectUnauthorized: false 
+    },
+    lookup: (hostname, options, callback) => {
+      dns.lookup(hostname, { family: 4 }, callback);
+    },
+    connectionTimeout: 15000, 
+    greetingTimeout: 15000,
+    socketTimeout: 15000
+  });
+};
 
 // MOTOR DE REINTENTOS AUTOMÁTICOS
 const enviarCorreoConReintentos = async (mailOptions, intentosMaximos = 3) => {
+  // Instanciamos el transporte justo antes de enviar
+  const transporter = crearTransporterFresco();
+
   for (let intento = 1; intento <= intentosMaximos; intento++) {
     try {
       console.log(`✉️ Intentando despachar correo (Intento ${intento} de ${intentosMaximos})...`);
