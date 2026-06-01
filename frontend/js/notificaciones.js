@@ -1,16 +1,16 @@
-// notificaciones.js - Versión Final y Global
+// notificaciones.js - Versión Final y Blindada
 
-// 0. Seguro: Cargar SweetAlert2 si no existe
+// 0. Seguridad: Definición garantizada de la URL
+if (!window.backendURL) {
+    window.backendURL = 'https://ecointercambio-backend-0ts7.onrender.com';
+}
+
+// 0.1 Seguro: Cargar SweetAlert2 si no existe
 if (typeof Swal === 'undefined') {
     const script = document.createElement('script');
     script.src = 'https://cdn.jsdelivr.net/npm/sweetalert2@11';
     document.head.appendChild(script);
 }
-
-// CONFIGURACIÓN GLOBAL: Usamos 'window.backendURL' para que no haya conflictos de redeclaración
-window.backendURL = window.location.hostname === '127.0.0.1' || window.location.hostname === 'localhost'
-    ? 'http://127.0.0.1:25244' 
-    : 'https://ecointercambio-backend-0ts7.onrender.com';
 
 // 1. Contador de mensajes en la Navbar
 function actualizarContadorNavbar() {
@@ -59,22 +59,30 @@ async function verificarNotificacionesPendientes() {
                 return;
             }
 
-            Swal.fire({
-                title: titulo,
-                text: mensaje,
-                icon: 'info',
-                confirmButtonText: 'Ir al chat',
-                showCancelButton: true,
-                cancelButtonText: 'Luego'
-            }).then((result) => {
-                if (result.isConfirmed) {
-                    const contactoId = (data.usuario_busca_id == userId) ? data.usuario_ofrece_id : data.usuario_busca_id;
-                    localStorage.setItem('contactoId', contactoId);
-                    localStorage.setItem('contactoNombre', data.otro_usuario_nickname);
-                    localStorage.setItem('currentProductId', data.producto_id);
-                    location.href = 'chat.html';
+            // Red de seguridad: si Swal tarda en cargar, lo ejecutamos cuando esté listo
+            const mostrarNotificacion = () => {
+                if (typeof Swal !== 'undefined') {
+                    Swal.fire({
+                        title: titulo,
+                        text: mensaje,
+                        icon: 'info',
+                        confirmButtonText: 'Ir al chat',
+                        showCancelButton: true,
+                        cancelButtonText: 'Luego'
+                    }).then((result) => {
+                        if (result.isConfirmed) {
+                            const contactoId = (data.usuario_busca_id == userId) ? data.usuario_ofrece_id : data.usuario_busca_id;
+                            localStorage.setItem('contactoId', contactoId);
+                            localStorage.setItem('contactoNombre', data.otro_usuario_nickname);
+                            localStorage.setItem('currentProductId', data.producto_id);
+                            location.href = 'chat.html';
+                        }
+                    });
+                } else {
+                    setTimeout(mostrarNotificacion, 500); // Reintento si Swal aún no carga
                 }
-            });
+            };
+            mostrarNotificacion();
         }
     } catch (err) {
         console.error("Error al verificar propuestas:", err);
