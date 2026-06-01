@@ -13,13 +13,19 @@ dotenv.config({ path: path.join(__dirname, '..', '.env') });
 
 // 2. Inicialización de la aplicación Express (¡Esto debe ir antes de usar app!)
 const app = express();
-
-// 3. Middlewares Globales
+// 🔥 CONFIGURACIÓN CORS DEFINITIVA PARA NGROK + RENDER
 app.use(cors({
-  origin: "*", // Permite acceso desde cualquier lugar (soluciona problemas de CORS)
-  methods: ["GET", "POST", "PUT", "DELETE"],
-  credentials: true
+    origin: [
+        'https://reutiles.onrender.com', // Permite peticiones de tu página en la nube
+        'http://127.0.0.1:5500',         // Permite peticiones de tu Live Server local
+        'http://localhost:5500'
+    ],
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+    // Autorizamos explícitamente la cabecera que salta la pantalla azul de Ngrok
+    allowedHeaders: ['Content-Type', 'Authorization', 'ngrok-skip-browser-warning'], 
+    credentials: true
 }));
+
 app.use(bodyParser.json());
 
 // 4. Conexión a la Base de Datos y Rutas

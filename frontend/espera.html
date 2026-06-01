@@ -6,47 +6,13 @@
     <title>Verificando Cuenta | ReÚtiles</title>
     <script src="https://cdn.socket.io/4.7.5/socket.io.min.js"></script>
     <style>
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background-color: #f4f7f6;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-            margin: 0;
-        }
-        .card {
-            background: white;
-            padding: 40px;
-            border-radius: 12px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
-            text-align: center;
-            max-width: 400px;
-            width: 100%;
-        }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f4f7f6; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; }
+        .card { background: white; padding: 40px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); text-align: center; max-width: 400px; width: 100%; }
         h2 { color: #16a34a; margin-bottom: 10px; }
         p { color: #555; line-height: 1.5; font-size: 15px; }
-        .email-destacado {
-            font-weight: bold;
-            color: #1e293b;
-            background: #f1f5f9;
-            padding: 4px 8px;
-            border-radius: 4px;
-        }
-        /* Animación sencilla de carga */
-        .spinner {
-            border: 4px solid #f3f3f3;
-            border-top: 4px solid #16a34a;
-            border-radius: 50%;
-            width: 40px;
-            height: 40px;
-            animation: spin 1s linear infinite;
-            margin: 25px auto;
-        }
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
+        .email-destacado { font-weight: bold; color: #1e293b; background: #f1f5f9; padding: 4px 8px; border-radius: 4px; }
+        .spinner { border: 4px solid #f3f3f3; border-top: 4px solid #16a34a; border-radius: 50%; width: 40px; height: 40px; animation: spin 1s linear infinite; margin: 25px auto; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
     </style>
 </head>
 <body>
@@ -55,44 +21,40 @@
         <h2>¡Casi listo!</h2>
         <p>Hemos enviado un enlace de verificación al correo:</p>
         <p><span id="user-email" class="email-destacado">cargando...</span></p>
-        
         <div class="spinner"></div>
-        
         <p style="color: #666; font-size: 13px;">Por favor, revisa tu bandeja de entrada (o carpeta de spam) y haz clic en el enlace. Esta pantalla avanzará sola.</p>
     </div>
 
     <script>
-        // 1. Obtener el correo electrónico desde la URL (?email=...)
         const urlParams = new URLSearchParams(window.location.search);
         const email = urlParams.get('email');
         
         if (email) {
             document.getElementById('user-email').textContent = email;
         } else {
-            // Si no hay correo, lo mandamos al login por si acaso
             window.location.href = 'login.html';
         }
 
-        // Detección automática del entorno (Local vs Producción)
+        // ⚠️ IMPORTANTE: Mantén esta URL igual a la de tu register.html
         const backendURL = 'https://override-affluent-purgatory.ngrok-free.dev';
 
-        // 2. CORREGIDO: Conectarse al servidor usando la URL inteligente detectada arriba
+        // 🔥 Se agregan los extraHeaders para saltar el bloqueo de Ngrok en los Sockets
         const socket = io(backendURL, {
-            transports: ['websocket', 'polling'] // Asegura compatibilidad con el contenedor de Render
+            transports: ['websocket', 'polling'],
+            extraHeaders: {
+                "ngrok-skip-browser-warning": "true"
+            }
         });
 
-        // 3. Escuchar el evento exclusivo de verificación para este correo electrónico
         socket.on(`verificado-${email}`, (data) => {
             if (data.verificado) {
-                // Cambiamos el mensaje un segundo antes de redirigir para que el usuario lo note
                 document.querySelector('h2').textContent = '🎉 ¡Cuenta Activada!';
                 document.querySelector('.spinner').style.display = 'none';
                 document.querySelector('p').textContent = 'Tu correo ha sido confirmado con éxito. Redirigiendo al inicio de sesión...';
                 
                 setTimeout(() => {
-                    // Redirigir a tu pantalla de Login real
                     window.location.href = 'login.html';
-                }, 2500); // Espera 2.5 segundos para que vea el cambio alegre
+                }, 2500); 
             }
         });
     </script>
