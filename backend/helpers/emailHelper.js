@@ -3,15 +3,13 @@ const path = require('path');
 const dotenv = require('dotenv');
 const dns = require('dns'); 
 
-// 1. Candado global
 dns.setDefaultResultOrder('ipv4first');
 
 dotenv.config({ path: path.join(__dirname, '..', '..', '.env') });
 
-// 🔥 2. CREACIÓN DEL TRANSPORTE BINDADO (El que ya comprobamos que funciona)
 const crearTransporterFresco = () => {
   return nodemailer.createTransport({
-    host: 'smtp.gmail.com', // ⚠️ IMPORTANTE: No usar service: 'gmail'
+    host: 'smtp.gmail.com',
     port: 465,
     secure: true,
     auth: {
@@ -21,7 +19,6 @@ const crearTransporterFresco = () => {
     tls: {
       rejectUnauthorized: false 
     },
-    // El candado definitivo: obligamos a Node a devolver un arreglo IPv4 puro
     lookup: (hostname, options, callback) => {
       dns.lookup(hostname, { family: 4 }, (err, address, family) => {
         callback(err, address, family);
@@ -33,7 +30,6 @@ const crearTransporterFresco = () => {
   });
 };
 
-// MOTOR DE REINTENTOS AUTOMÁTICOS
 const enviarCorreoConReintentos = async (mailOptions, intentosMaximos = 3) => {
   const transporter = crearTransporterFresco();
 
@@ -56,9 +52,7 @@ const enviarCorreoConReintentos = async (mailOptions, intentosMaximos = 3) => {
   }
 };
 
-// Función para enviar el correo de verificación (Para Ngrok / Laptop)
 const sendVerificationEmail = async (email, nickname, token) => {
-  // Ponemos Ngrok como respaldo por si acaso falla tu .env local
   const backendURL = process.env.BACKEND_URL || 'https://override-affluent-purgatory.ngrok-free.dev';
   const urlVerificacion = `${backendURL}/api/auth/verify?token=${token}`;
 
@@ -81,7 +75,6 @@ const sendVerificationEmail = async (email, nickname, token) => {
   await enviarCorreoConReintentos(mailOptions);
 };
 
-// Función para enviar el correo de recuperación de contraseña (Para Render / Nube)
 const sendResetPasswordEmail = async (email, token) => {
   const frontendURL = process.env.FRONTEND_URL || 'https://reutiles.onrender.com';
   const urlReset = `${frontendURL}/reset-password.html?token=${token}`;

@@ -31,13 +31,10 @@ function sonDeCategoriaSimilar(a, b) {
   b = limpiarTexto(b);
   return CATEGORIAS_SIMILARES.some(grupo => grupo.includes(a) && grupo.includes(b));
 }
-
-// 1. OBTENER COINCIDENCIAS (FILTRANDO PRODUCTOS INTERCAMBIADOS)
 router.get('/:userId', async (req, res) => {
   const userId = req.params.userId;
 
   try {
-    // FILTRO: Solo traemos productos que NO han sido intercambiados
     const sqlMisProductos = "SELECT * FROM productos WHERE usuario_id = ? AND estado != 'intercambiado'";
     const [misProductos] = await db.query(sqlMisProductos, [userId]);
 
@@ -50,7 +47,6 @@ router.get('/:userId', async (req, res) => {
 
     await Promise.all(
       misProductos.map(async producto => {
-        // FILTRO: Solo buscamos productos de otros que TAMBIÉN están disponibles
         const sqlBusqueda = `
           SELECT productos.*, usuarios.nickname 
           FROM productos 
@@ -111,8 +107,6 @@ router.get('/:userId', async (req, res) => {
     res.status(500).json({ error: "Error al obtener coincidencias" });
   }
 });
-
-// 🔥 2. NUEVAS COINCIDENCIAS (FILTRANDO PRODUCTOS INTERCAMBIADOS)
 router.get('/nuevas/:id', async (req, res) => {
   const usuarioId = req.params.id;
   try {
@@ -147,7 +141,6 @@ router.get('/nuevas/:id', async (req, res) => {
   }
 });
 
-// 🔥 3. REVISADO
 router.put('/revisado/:id', async (req, res) => {
   res.status(200).json({ message: 'Matches marcados como revisados' });
 });
@@ -167,7 +160,7 @@ function crearMatch(producto, r, tipo) {
     usuario: r.usuario_id,
     tipo: tipo,
     imagen: r.imagen,
-    estado: r.estado // Incluimos el estado por si acaso
+    estado: r.estado
   };
 }
 

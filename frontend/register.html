@@ -42,20 +42,17 @@
   </div>
 
   <script>
-    // Funcionalidad para mostrar/ocultar contraseña
     const toggleIcon = document.getElementById('toggleIcon');
     const passwordInput = document.getElementById('password');
 
     if (toggleIcon && passwordInput) {
       toggleIcon.addEventListener('click', function () {
-        // Alternar el tipo de input
         const type = passwordInput.getAttribute('type') === 'password' ? 'text' : 'password';
         passwordInput.setAttribute('type', type);
-        
-        // Alternar el icono (ojo abierto / ojo cerrado con la diagonal)
         this.classList.toggle('fa-eye-slash');
       });
     }
+
     document.getElementById('registerForm').addEventListener('submit', async (e) => {
       e.preventDefault();
       
@@ -74,8 +71,6 @@
       const nickname = form.nickname.value;
       const email = form.email.value;
       const password = form.password.value;
-
-      // ⚠️ IMPORTANTE: Si reinicias Ngrok, actualiza este enlace
       const backendURL = 'https://override-affluent-purgatory.ngrok-free.dev';
 
       try {
@@ -83,7 +78,6 @@
           method: 'POST',
           headers: { 
             'Content-Type': 'application/json',
-            // 🔥 EL TRUCO PARA SALTAR LA PANTALLA DE NGROK Y EVITAR EL BLOQUEO
             'ngrok-skip-browser-warning': 'true' 
           },
           body: JSON.stringify({ nickname, email, password })

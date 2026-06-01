@@ -65,17 +65,13 @@
   
   <script src="js/notificaciones.js"></script>
   <script>
-    // Funcionalidad para mostrar/ocultar contraseña
     const toggleIcon = document.getElementById('toggleIcon');
     const passwordInput = document.getElementById('password');
 
     if (toggleIcon && passwordInput) {
       toggleIcon.addEventListener('click', function () {
-        // Alternar el tipo de input
         const type = passwordInput.getAttribute('type') === 'password' ? 'text' : 'password';
         passwordInput.setAttribute('type', type);
-        
-        // Alternar el icono (ojo abierto / ojo cerrado con la diagonal)
         this.classList.toggle('fa-eye-slash');
       });
     }
@@ -95,7 +91,6 @@
       const password = form.password.value;
 
       try {
-        // EN LUGAR DE `${window.backendURL}/api/auth/login`
         const res = await fetch('https://ecointercambio-backend-0ts7.onrender.com/api/auth/login', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },

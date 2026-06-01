@@ -7,7 +7,6 @@ const { sendVerificationEmail, sendResetPasswordEmail } = require('../helpers/em
 
 const REGEX_PASSWORD = /^(?=.*\d)(?=.*[a-z])(?=.*[A-Z]).{8,}$/;
 
-// --- RUTA DE REGISTRO DE USUARIOS ---
 router.post('/register', async (req, res) => {
   const { nickname, email, password } = req.body;
 
@@ -35,8 +34,6 @@ router.post('/register', async (req, res) => {
     const sql = "INSERT INTO usuarios (nickname, email, password, token_verificacion, verificado) VALUES (?, ?, ?, ?, 0)";
     await db.query(sql, [nickname, email, hashedPassword, tokenVerificacion]);
 
-    // Forzamos al servidor a esperar el envío del correo antes de responderle al cliente.
-    // Esto evita que Render apague las conexiones de red en segundo plano.
     try {
       await sendVerificationEmail(email, nickname, tokenVerificacion);
       return res.status(200).json({ 
@@ -44,7 +41,6 @@ router.post('/register', async (req, res) => {
       });
     } catch (mailErr) {
       console.error("❌ Error al enviar el correo de verificación:", mailErr);
-      // Si la red parpadea, responde 201 para que el frontend avance a espera.html de todos modos
       return res.status(201).json({ 
         message: 'Usuario registrado, pero hubo un problema al enviar el correo de activación. Contacta al administrador.' 
       });
@@ -57,7 +53,6 @@ router.post('/register', async (req, res) => {
   }
 });
 
-// --- RUTA PARA VERIFICAR EL CORREO (Avisa por Sockets) ---
 router.get('/verify', async (req, res) => {
   const { token } = req.query;
 
@@ -78,7 +73,6 @@ router.get('/verify', async (req, res) => {
     const sqlActualizar = "UPDATE usuarios SET verificado = 1, token_verificacion = NULL WHERE token_verificacion = ?";
     await db.query(sqlActualizar, [token]);
 
-    // Avisar en tiempo real al frontend mediante Socket.io
     const io = req.app.get('io');
     if (io) {
       io.emit(`verificado-${usuario.email}`, { verificado: true });
@@ -98,7 +92,6 @@ router.get('/verify', async (req, res) => {
   }
 });
 
-// --- RUTA PARA INICIAR SESIÓN ---
 router.post('/login', async (req, res) => {
   const { email, password } = req.body;
 
@@ -134,7 +127,6 @@ router.post('/login', async (req, res) => {
   }
 });
 
-// --- RUTA PARA SOLICITAR RECUPERACIÓN DE CONTRASEÑA ---
 router.post('/forgot-password', async (req, res) => {
   const { email } = req.body;
 
@@ -174,7 +166,6 @@ router.post('/forgot-password', async (req, res) => {
   }
 });
 
-// --- RUTA PARA GUARDAR LA NUEVA CONTRASEÑA ACTUALIZADA ---
 router.post('/reset-password', async (req, res) => {
   const { token, password } = req.body;
 
