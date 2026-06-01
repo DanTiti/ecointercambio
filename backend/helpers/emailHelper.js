@@ -3,28 +3,52 @@ const path = require('path');
 const dotenv = require('dotenv');
 const dns = require('dns'); 
 
-// 1. Mantenemos el parche de IPv4 para evitar el error de red anterior
+// Forzamos IPv4 para evitar el error ENETUNREACH de Render
 dns.setDefaultResultOrder('ipv4first');
 
-// Configuración de dotenv para desarrollo local
+// Configuración de dotenv
 dotenv.config({ path: path.join(__dirname, '..', '..', '.env') });
 
-// 2. CAMBIO CRÍTICO: Usamos el Puerto 465 con SSL Directo (Inmune a bloqueos de STARTTLS)
+// Configuración del transporte seguro por puerto 465
 const transporter = nodemailer.createTransport({
   host: 'smtp.gmail.com',
   port: 465,
-  secure: true, // AL USAR PUERTO 465, ESTO DEBE SER TRUE (SSL DIRECTO)
+  secure: true, 
   auth: {
     user: process.env.EMAIL_USER,
     pass: process.env.EMAIL_PASS // Tus 16 letras amarillas sin espacios
   },
   tls: {
-    rejectUnauthorized: false // Evita problemas con las llaves de seguridad del contenedor de Render
+    rejectUnauthorized: false 
   },
-  connectionTimeout: 10000, // 10 segundos máximos para conectar
-  greetingTimeout: 10000,
-  socketTimeout: 10000
+  connectionTimeout: 15000, // 15 segundos de tolerancia por intento
+  greetingTimeout: 15000,
+  socketTimeout: 15000
 });
+
+// 🔥 MOTOR DE REINTENTOS AUTOMÁTICOS
+// Si la red de Render parpadea, esta función reintenta el envío en el momento
+const enviarCorreoConReintentos = async (mailOptions, intentosMaximos = 3) => {
+  for (let intento = 1; intento <= intentosMaximos; intento++) {
+    try {
+      console.log(`✉️ Intentando despachar correo (Intento ${intento} de ${intentosMaximos})...`);
+      const info = await transporter.sendMail(mailOptions);
+      console.log(`✅ ¡Correo enviado con éxito en el intento número ${intento}!`);
+      return info;
+    } catch (error) {
+      console.error(`⚠️ El intento ${intento} falló debido a: ${error.message}`);
+      
+      // Si ya fue el último intento, lanzamos el error definitivo
+      if (intento === intentosMaximos) {
+        throw error;
+      }
+      
+      // Esperar 2 segundos antes de realizar el siguiente intento
+      console.log("Esperando 2 segundos para reintentar...");
+      await new Promise(resolve => setTimeout(resolve, 2000));
+    }
+  }
+};
 
 // Función para enviar el correo de verificación
 const sendVerificationEmail = async (email, nickname, token) => {
@@ -48,7 +72,8 @@ const sendVerificationEmail = async (email, nickname, token) => {
     `
   };
 
-  await transporter.sendMail(mailOptions);
+  // Llamamos al motor de reintentos en lugar del sendMail directo
+  await enviarCorreoConReintentos(mailOptions);
 };
 
 // Función para enviar el correo de recuperación de contraseña
@@ -59,7 +84,7 @@ const sendResetPasswordEmail = async (email, token) => {
   const mailOptions = {
     from: `"ReÚtiles" <${process.env.EMAIL_USER}>`,
     to: email,
-    subject: 'Restablecer tu contraseña en ReÚtiles',
+    subject: '🔒 Restablecer tu contraseña en ReÚtiles',
     html: `
         <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #eee; border-radius: 10px;">
         <h2 style="color: #2563eb; text-align: center;">Recuperación de Contraseña</h2>
@@ -73,7 +98,8 @@ const sendResetPasswordEmail = async (email, token) => {
     `
   };
 
-  await transporter.sendMail(mailOptions);
+  // Llamamos al motor de reintentos
+  await enviarCorreoConReintentos(mailOptions);
 };
 
 module.exports = {
