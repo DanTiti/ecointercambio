@@ -58,9 +58,7 @@
       const email = form.email.value;
       const password = form.password.value;
 
-      const backendURL = window.location.hostname === '127.0.0.1' || window.location.hostname === 'localhost'
-        ? 'http://127.0.0.1:25244' 
-        : 'https://ecointercambio-backend-0ts7.onrender.com';
+      const backendURL = 'https://ecointercambio-backend-0ts7.onrender.com';
 
       try {
         // Cambiado a 127.0.0.1 para evitar bloqueos estrictos de mapeo local en Chrome

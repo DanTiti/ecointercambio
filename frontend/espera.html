@@ -74,9 +74,7 @@
         }
 
         // Detección automática del entorno (Local vs Producción)
-        const backendURL = window.location.hostname === '127.0.0.1' || window.location.hostname === 'localhost'
-            ? 'http://127.0.0.1:25244' 
-            : 'https://ecointercambio-backend-0ts7.onrender.com';
+        const backendURL = 'https://ecointercambio-backend-0ts7.onrender.com';
 
         // 2. CORREGIDO: Conectarse al servidor usando la URL inteligente detectada arriba
         const socket = io(backendURL, {
