@@ -1,15 +1,12 @@
 const nodemailer = require('nodemailer');
 const path = require('path'); 
 const dotenv = require('dotenv');
-const dns = require('dns'); 
-
-// Forzamos IPv4 para evitar el error ENETUNREACH de Render
-dns.setDefaultResultOrder('ipv4first');
+const dns = require('dns'); // Módulo DNS necesario
 
 // Configuración de dotenv
 dotenv.config({ path: path.join(__dirname, '..', '..', '.env') });
 
-// Configuración del transporte seguro por puerto 465
+// CONFIGURACIÓN CON CASILLERO DE FUERZA PARA IPV4
 const transporter = nodemailer.createTransport({
   host: 'smtp.gmail.com',
   port: 465,
@@ -21,13 +18,17 @@ const transporter = nodemailer.createTransport({
   tls: {
     rejectUnauthorized: false 
   },
-  connectionTimeout: 15000, // 15 segundos de tolerancia por intento
+  // 🔥 EL CANDADO DEFINITIVO CONTRA EL ENETUNREACH IPV6:
+  // Forzamos a Nodemailer a resolver la dirección de Google usando EXCLUSIVAMENTE IPv4 (family: 4)
+  lookup: (hostname, options, callback) => {
+    dns.lookup(hostname, { family: 4 }, callback);
+  },
+  connectionTimeout: 15000, 
   greetingTimeout: 15000,
   socketTimeout: 15000
 });
 
-// 🔥 MOTOR DE REINTENTOS AUTOMÁTICOS
-// Si la red de Render parpadea, esta función reintenta el envío en el momento
+// MOTOR DE REINTENTOS AUTOMÁTICOS
 const enviarCorreoConReintentos = async (mailOptions, intentosMaximos = 3) => {
   for (let intento = 1; intento <= intentosMaximos; intento++) {
     try {
@@ -38,12 +39,10 @@ const enviarCorreoConReintentos = async (mailOptions, intentosMaximos = 3) => {
     } catch (error) {
       console.error(`⚠️ El intento ${intento} falló debido a: ${error.message}`);
       
-      // Si ya fue el último intento, lanzamos el error definitivo
       if (intento === intentosMaximos) {
         throw error;
       }
       
-      // Esperar 2 segundos antes de realizar el siguiente intento
       console.log("Esperando 2 segundos para reintentar...");
       await new Promise(resolve => setTimeout(resolve, 2000));
     }
@@ -72,7 +71,6 @@ const sendVerificationEmail = async (email, nickname, token) => {
     `
   };
 
-  // Llamamos al motor de reintentos en lugar del sendMail directo
   await enviarCorreoConReintentos(mailOptions);
 };
 
@@ -98,7 +96,6 @@ const sendResetPasswordEmail = async (email, token) => {
     `
   };
 
-  // Llamamos al motor de reintentos
   await enviarCorreoConReintentos(mailOptions);
 };
 
