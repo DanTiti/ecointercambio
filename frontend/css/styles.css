@@ -534,6 +534,37 @@ form input, form button {
     margin-bottom: 10px;
 }
 
+/* Contenedor relativo para posicionar el ojito */
+.password-wrapper {
+  position: relative;
+  width: 100%;
+  margin-bottom: 15px; /* Ajusta según el margen de tus inputs */
+}
+
+/* El input debe tener espacio a la derecha para que el texto no pise el icono */
+.password-wrapper input {
+  width: 100%;
+  padding-right: 40px; 
+  box-sizing: border-box;
+  margin-bottom: 0; /* Quita el margen inferior si ya lo tiene el wrapper */
+}
+
+/* El icono del ojito */
+.toggle-password {
+  position: absolute;
+  top: 50%;
+  right: 15px;
+  transform: translateY(-50%);
+  cursor: pointer;
+  color: #6b7280;
+  font-size: 1.1rem;
+  transition: color 0.2s;
+}
+
+.toggle-password:hover {
+  color: #1f2937;
+}
+
 /* --- COMPLEMENTOS: CHAT Y MODALES (Añadir al final del CSS) --- */
 
 /* Chat */
