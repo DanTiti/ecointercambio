@@ -14,10 +14,7 @@ const matchAlertRoutes = require('./routes/matchAlert');
 
 const app = express();
 
-app.use(cors({
-  origin: true,
-  credentials: true
-}));
+app.use(cors()); // Permite todo por defecto, sin restricciones
 
 app.use(bodyParser.json());
 
