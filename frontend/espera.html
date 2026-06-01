@@ -35,16 +35,15 @@
             window.location.href = 'login.html';
         }
 
-        // ⚠️ IMPORTANTE: Mantén esta URL igual a la de tu register.html
         const backendURL = 'https://override-affluent-purgatory.ngrok-free.dev';
 
-        // 🔥 Se agregan los extraHeaders para saltar el bloqueo de Ngrok en los Sockets
-        const socket = io(backendURL, {
-            transports: ['websocket', 'polling'],
-            extraHeaders: {
-                "ngrok-skip-browser-warning": "true"
-            }
-        });
+                // 🔥 Ponemos 'polling' al inicio del arreglo
+                const socket = io(backendURL, {
+                    transports: ['polling', 'websocket'], 
+                    extraHeaders: {
+                        "ngrok-skip-browser-warning": "true"
+                    }
+                });
 
         socket.on(`verificado-${email}`, (data) => {
             if (data.verificado) {
