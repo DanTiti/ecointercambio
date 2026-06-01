@@ -1,10 +1,12 @@
+require('dns').setDefaultResultOrder('ipv4first'); 
+
 const express = require('express');
 const cors = require('cors');
 const bodyParser = require('body-parser');
 const http = require('http');
 const { Server } = require('socket.io');
 const path = require('path'); 
-const dotenv = require('dotenv'); 
+const dotenv = require('dotenv');
 
 // 1. Configuración de dotenv apuntando a la raíz de ecointercambio
 dotenv.config({ path: path.join(__dirname, '..', '.env') });

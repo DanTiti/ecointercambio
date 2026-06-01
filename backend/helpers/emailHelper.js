@@ -59,7 +59,7 @@ const sendResetPasswordEmail = async (email, token) => {
   const mailOptions = {
     from: `"ReÚtiles" <${process.env.EMAIL_USER}>`,
     to: email,
-    subject: '🔒 Restablecer tu contraseña en ReÚtiles',
+    subject: 'Restablecer tu contraseña en ReÚtiles',
     html: `
         <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #eee; border-radius: 10px;">
         <h2 style="color: #2563eb; text-align: center;">Recuperación de Contraseña</h2>
