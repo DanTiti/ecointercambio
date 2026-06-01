@@ -5,20 +5,26 @@ const dotenv = require('dotenv');
 // Configuración de dotenv para desarrollo local
 dotenv.config({ path: path.join(__dirname, '..', '..', '.env') });
 
-// Configuración directa y segura para Gmail en producción
+// CONFIGURACIÓN INMUNE A BLOQUEOS EN LA NUBE (Puerto 587 + Bypass TLS)
 const transporter = nodemailer.createTransport({
   host: 'smtp.gmail.com',
-  port: 465,
-  secure: true, // Usa SSL/TLS obligatorio para producción
+  port: 587,
+  secure: false, // false porque el puerto 587 usa STARTTLS, no SSL directo
   auth: {
     user: process.env.EMAIL_USER,
-    pass: process.env.EMAIL_PASS // Las 16 letras de la contraseña de aplicación
-  }
+    pass: process.env.EMAIL_PASS // Tus 16 letras sin espacios
+  },
+  tls: {
+    // CLAVE PARA RENDER: Evita que el contenedor de la nube congele la conexión por temas de certificados locales
+    rejectUnauthorized: false 
+  },
+  connectionTimeout: 15000, // Le damos 15 segundos de tolerancia para el handshake
+  greetingTimeout: 15000,
+  socketTimeout: 15000
 });
 
 // Función para enviar el correo de verificación
 const sendVerificationEmail = async (email, nickname, token) => {
-  // RED DE SEGURIDAD: Si estás en Render usa la URL de Render, si no, usa localhost
   const backendURL = process.env.BACKEND_URL || 'https://ecointercambio-backend-0ts7.onrender.com';
   const urlVerificacion = `${backendURL}/api/auth/verify?token=${token}`;
 
@@ -44,7 +50,6 @@ const sendVerificationEmail = async (email, nickname, token) => {
 
 // Función para enviar el correo de recuperación de contraseña
 const sendResetPasswordEmail = async (email, token) => {
-  // RED DE SEGURIDAD: Si estás en Render usa tu frontend en línea, si no, usa el Live Server local
   const frontendURL = process.env.FRONTEND_URL || 'https://reutiles.onrender.com';
   const urlReset = `${frontendURL}/reset-password.html?token=${token}`;
 
