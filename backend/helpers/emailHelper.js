@@ -1,42 +1,22 @@
 const nodemailer = require('nodemailer');
 const path = require('path'); 
 const dotenv = require('dotenv');
-const dns = require('dns'); 
 
-// 1. Candado global
-dns.setDefaultResultOrder('ipv4first');
-
+// Configuración de dotenv
 dotenv.config({ path: path.join(__dirname, '..', '..', '.env') });
 
-// 🔥 2. CREACIÓN DEL TRANSPORTE (Forzado absoluto a IPv4)
-const crearTransporterFresco = () => {
-  return nodemailer.createTransport({
-    host: 'smtp.gmail.com', // ⚠️ IMPORTANTE: No usar service: 'gmail'
-    port: 465,
-    secure: true,
-    auth: {
-      user: process.env.EMAIL_USER,
-      pass: process.env.EMAIL_PASS 
-    },
-    tls: {
-      rejectUnauthorized: false 
-    },
-    // El candado definitivo: obligamos a Node a devolver un arreglo IPv4 puro
-    lookup: (hostname, options, callback) => {
-      dns.lookup(hostname, { family: 4 }, (err, address, family) => {
-        callback(err, address, family);
-      });
-    },
-    connectionTimeout: 15000, 
-    greetingTimeout: 15000,
-    socketTimeout: 15000
-  });
-};
+// 🔥 CONFIGURACIÓN LIMPIA Y NATIVA:
+// Quitamos los candados DNS de IPv4 para que Render y tu Laptop trabajen sin fricciones
+const transporter = nodemailer.createTransport({
+  service: 'gmail',
+  auth: {
+    user: process.env.EMAIL_USER,
+    pass: process.env.EMAIL_PASS // Tus 16 letras amarillas sin espacios
+  }
+});
 
 // MOTOR DE REINTENTOS AUTOMÁTICOS
 const enviarCorreoConReintentos = async (mailOptions, intentosMaximos = 3) => {
-  const transporter = crearTransporterFresco();
-
   for (let intento = 1; intento <= intentosMaximos; intento++) {
     try {
       console.log(`✉️ Intentando despachar correo (Intento ${intento} de ${intentosMaximos})...`);
@@ -56,7 +36,7 @@ const enviarCorreoConReintentos = async (mailOptions, intentosMaximos = 3) => {
   }
 };
 
-// Función para enviar el correo de verificación
+// Función para enviar el correo de verificación (Usada principalmente por tu laptop/Ngrok)
 const sendVerificationEmail = async (email, nickname, token) => {
   const backendURL = process.env.BACKEND_URL || 'https://ecointercambio-backend-0ts7.onrender.com';
   const urlVerificacion = `${backendURL}/api/auth/verify?token=${token}`;
@@ -81,7 +61,7 @@ const sendVerificationEmail = async (email, nickname, token) => {
   await enviarCorreoConReintentos(mailOptions);
 };
 
-// Función para enviar el correo de recuperación de contraseña
+// Función para enviar el correo de recuperación (Usada por Render en la nube)
 const sendResetPasswordEmail = async (email, token) => {
   const frontendURL = process.env.FRONTEND_URL || 'https://reutiles.onrender.com';
   const urlReset = `${frontendURL}/reset-password.html?token=${token}`;
